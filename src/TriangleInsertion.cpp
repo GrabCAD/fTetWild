@@ -42,7 +42,8 @@
 #define III -1
 
 //fortest
-#include <floattetwild/Rational.h>
+//Removed by Ben S.
+//#include <floattetwild/Rational.h>
 double time_find_cutting_tets = 0;
 double time_find_cutting_tets1 = 0;
 double time_find_cutting_tets2 = 0;
@@ -3133,6 +3134,7 @@ void floatTetWild::check_track_surface_fs(Mesh &mesh, std::vector<std::array<std
     }
 }
 
+/* Removed by Ben S.
 int floatTetWild::orient_rational(const Vector3_r& p1, const Vector3_r& p2, const Vector3_r& p3, const Vector3_r& p){
     auto nv = (p2-p1).cross(p3-p1);
     triwild::Rational res = nv.dot(p-p1);
@@ -3143,3 +3145,4 @@ int floatTetWild::orient_rational(const Vector3_r& p1, const Vector3_r& p2, cons
     else
         return Predicates::ORI_NEGATIVE;
 }
+*/

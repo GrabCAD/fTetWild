@@ -1110,7 +1110,38 @@ bool floatTetWild::is_energy_unstable(const std::array<Scalar, 12>& T, Scalar re
 
 int cnt_stable = 0;
 int cnt_large = 0;
-#include <floattetwild/Rational.h>
+
+//Replaced by Ben S. Simply copied libxprec's pow function here to keep it header only.
+//#include <floattetwild/Rational.h>
+#include "ddouble.h"
+DDouble pow(DDouble x, int n)
+{
+    if (n < 0) {
+        DDouble res = pow(x, -n);
+        return reciprocal(res);
+    }
+    if (n == 0) {
+        // XXX handle nan's etc.
+        return DDouble(1.0);
+    }
+
+    // Get first non-zero power
+    while ((n & 1) == 0) {
+        n >>= 1;
+        x *= x;
+    }
+
+    // Multiply and square
+    DDouble res = x;
+    while (n >>= 1) {
+        x *= x;
+        if ((n & 1) == 1)
+            res *= x;
+    }
+    return res;
+}
+
+
 Scalar floatTetWild::AMIPS_energy(const std::array<Scalar, 12>& T) {
     Scalar res = AMIPS_energy_aux(T);
     if(use_old_energy) {
@@ -1145,6 +1176,9 @@ Scalar floatTetWild::AMIPS_energy(const std::array<Scalar, 12>& T) {
             return std::numeric_limits<double>::infinity();
         }
 
+
+
+/*
         std::array<triwild::Rational, 12> r_T;
         for (int j = 0; j < 12; j++)
             r_T[j] = T[j];
@@ -1177,7 +1211,45 @@ Scalar floatTetWild::AMIPS_energy(const std::array<Scalar, 12>& T) {
                                    (-twothird * r_T[1 + -1] - twothird * r_T[1 + 8]) * r_T[1 + 5] -
                                    twothird * r_T[1 + -1] * r_T[1 + 8] + r_T[1 + -1] * r_T[1 + -1] +
                                    r_T[1 + 8] * r_T[1 + 8] + r_T[1 + 6] * r_T[1 + 6] + r_T[1 + 7] * r_T[1 + 7], 3);
-        return std::cbrt(res_r.to_double());
+        return std::cbrt(res_r.to_double());*/
+
+        //Above replaced by below by Ben S. Avoiding GMP because it's a nightmare.
+        //I don't know for sure ddouble is good enough, it's neither rational nor adaptive.
+        //It is a lot more accurate than double though.
+
+        std::array<DDouble, 12> r_T;
+        for (int j = 0; j < 12; j++)
+            r_T[j] = T[j];
+        const DDouble twothird = DDouble(2) / DDouble(3);
+        DDouble tmp = ((-r_T[1 + 2] + r_T[1 + 5]) * r_T[1 + 1] + r_T[1 + 2] * r_T[1 + 7] +
+                                 (r_T[1 + -1] - r_T[1 + 5]) * r_T[1 + 4] - r_T[1 + -1] * r_T[1 + 7]) * r_T[1 + 9] +
+                                ((r_T[1 + 2] - r_T[1 + 5]) * r_T[1 + 0] - r_T[1 + 2] * r_T[1 + 6] +
+                                 (-r_T[1 + -1] + r_T[1 + 5]) * r_T[1 + 3] + r_T[1 + -1] * r_T[1 + 6]) * r_T[1 + 10] +
+                                (-r_T[1 + 2] * r_T[1 + 7] + (-r_T[1 + 8] + r_T[1 + 5]) * r_T[1 + 4] +
+                                 r_T[1 + 8] * r_T[1 + 7]) * r_T[1 + 0] +
+                                (r_T[1 + 2] * r_T[1 + 6] + (r_T[1 + 8] - r_T[1 + 5]) * r_T[1 + 3] - r_T[1 + 8] * r_T[1 + 6]) *
+                                r_T[1 + 1] + (r_T[1 + 3] * r_T[1 + 7] - r_T[1 + 4] * r_T[1 + 6]) * (r_T[1 + -1] - r_T[1 + 8]);
+        if(tmp == 0)
+            return std::numeric_limits<double>::infinity();
+
+        auto res_r = DDouble(27) / 16 *
+                     pow(tmp, -2) * pow(r_T[1 + 9] * r_T[1 + 9] +
+                                   (-twothird * r_T[1 + 0] - twothird * r_T[1 + 3] - twothird * r_T[1 + 6]) *
+                                   r_T[1 + 9] + r_T[1 + 10] * r_T[1 + 10] +
+                                   (-twothird * r_T[1 + 1] - twothird * r_T[1 + 4] - twothird * r_T[1 + 7]) *
+                                   r_T[1 + 10] + r_T[1 + 0] * r_T[1 + 0] +
+                                   (-twothird * r_T[1 + 3] - twothird * r_T[1 + 6]) * r_T[1 + 0] +
+                                   r_T[1 + 1] * r_T[1 + 1] +
+                                   (-twothird * r_T[1 + 4] - twothird * r_T[1 + 7]) * r_T[1 + 1] +
+                                   r_T[1 + 2] * r_T[1 + 2] +
+                                   (-twothird * r_T[1 + -1] - twothird * r_T[1 + 8] - twothird * r_T[1 + 5]) *
+                                   r_T[1 + 2] + r_T[1 + 3] * r_T[1 + 3] - twothird * r_T[1 + 3] * r_T[1 + 6] +
+                                   r_T[1 + 4] * r_T[1 + 4] - twothird * r_T[1 + 4] * r_T[1 + 7] +
+                                   r_T[1 + 5] * r_T[1 + 5] +
+                                   (-twothird * r_T[1 + -1] - twothird * r_T[1 + 8]) * r_T[1 + 5] -
+                                   twothird * r_T[1 + -1] * r_T[1 + 8] + r_T[1 + -1] * r_T[1 + -1] +
+                                   r_T[1 + 8] * r_T[1 + 8] + r_T[1 + 6] * r_T[1 + 6] + r_T[1 + 7] * r_T[1 + 7], 3);
+        return std::cbrt(res_r.hi());
     } else {
         return res;
     }
