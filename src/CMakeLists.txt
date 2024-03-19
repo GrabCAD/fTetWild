@@ -55,6 +55,9 @@ set(SOURCES
 	Types.hpp
 
 	Statistics.h
+	
+	fTetWildRun.cpp
+	fTetWildRun.h
 )
 
 prepend_current_path(SOURCES)
