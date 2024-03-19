@@ -586,13 +586,9 @@ bool floatTetWild::insert_one_triangle(int insert_f_id, const std::vector<Vector
 
     //fortest
     myassert(!cut_t_ids.empty(), "cut_t_ids.empty()!!!");
-    if (cut_t_ids.empty()) {
-        cout << get_area(vs[0], vs[1], vs[2]) << endl;
-        cout << "f" << insert_f_id << ": " << input_faces[insert_f_id][0] << " " << input_faces[insert_f_id][1]
-             << " " << input_faces[insert_f_id][2] << endl;
-        pausee();
+    if (cut_t_ids.empty())
         return false;
-    }
+
     //fortest
 
     /////
@@ -1810,9 +1806,6 @@ void floatTetWild::find_boundary_edges(const std::vector<Vector3> &input_vertice
             }
         }
     }
-
-    cout << "#boundary_e1 = " << cnt1 << endl;
-    cout << "#boundary_e2 = " << cnt2 << endl;
 }
 //double time_e1 = 0;
 //double time_e2 = 0;
@@ -2749,8 +2742,6 @@ void floatTetWild::mark_surface_fs(const std::vector<Vector3> &input_vertices, c
         }
     }
 
-    cout<<"known_surface_fs.size = "<<known_surface_fs.size()<<endl;
-    cout<<"known_not_surface_fs.size = "<<known_not_surface_fs.size()<<endl;
     if(known_surface_fs.empty() && known_not_surface_fs.empty())
         return;
 
@@ -2855,7 +2846,6 @@ bool floatTetWild::is_uninserted_face_covered(int uninserted_f_id, const std::ve
             return false;
     }
 
-    cout<<"covered!!!!!!!"<<endl;
     return true;
 }
 
@@ -3101,7 +3091,7 @@ void floatTetWild::check_track_surface_fs(Mesh &mesh, std::vector<std::array<std
         if (is_inside/* && i < sorted_f_ids.size() * 0.98*/)
 //        if (f_id != 3083)
             continue;
-        cout << i << " f_id = " << f_id << endl;
+
         //output input/tet triangles in different colors
         {
             auto &infos = covered_fs_infos[f_id];

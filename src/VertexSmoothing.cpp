@@ -153,8 +153,6 @@ void floatTetWild::vertex_smoothing(Mesh& mesh, const AABBWrapper& tree){
     for (size_t v_id = 0; v_id < tet_vertices.size(); v_id++)
         smooth_one(v_id);
 #endif
-
-    cout<<"success = "<<suc_counter<<"("<<counter<<")"<<endl;
 }
 
 bool floatTetWild::project_and_check(Mesh& mesh, int v_id, Vector3& p, const AABBWrapper& tree, bool is_sf, std::vector<Scalar>& new_qs) {

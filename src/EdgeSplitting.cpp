@@ -102,8 +102,6 @@ void floatTetWild::edge_splitting(Mesh& mesh, const AABBWrapper& tree) {
             t.scalar = 0;
         }
     }
-
-    cout<<"success = "<<suc_counter<<"("<<counter<<")"<<endl;
 }
 
 bool floatTetWild::split_an_edge(Mesh& mesh, int v1_id, int v2_id, bool is_repush,

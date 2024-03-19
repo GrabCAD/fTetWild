@@ -40,26 +40,31 @@
 using namespace floatTetWild;
 using namespace Eigen;
 
+/*
+Mesh fTetWildRun(){
+    Mesh        mesh;
+    Parameters& params = mesh.params;
 
+    return mesh;
+}*/
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv){
 
 #ifndef WIN32
     setenv("GEO_NO_SIGNAL_HANDLER", "1", 1);
 #endif
 
+    //Note: this is necessary and results in printing, at least in debug mode :(
+    //It's inconsistent.
     GEO::initialize();
-
-    // Import standard command line arguments, and custom ones
-    GEO::CmdLine::import_arg_group("standard");
-    GEO::CmdLine::import_arg_group("pre");
-    GEO::CmdLine::import_arg_group("algo");
 
     bool skip_simplify = false;
 
     Mesh        mesh;
     Parameters& params = mesh.params;
+    params.log_level = 6;
+    params.is_quiet = true;
+
 
     CLI::App command_line {"float-tetwild"};
     command_line
@@ -80,44 +85,6 @@ int main(int argc, char** argv)
                             params.eps_rel,
                             "epsilon = diag_of_bbox * EPS. (double, optional, default: 1e-3)");
 
-    command_line.add_option("--max-its", params.max_its, "(for debugging usage only)");
-    command_line.add_option(
-      "--stop-energy", params.stop_energy, "Stop optimization when max energy is lower than this.");
-    command_line.add_option("--stage", params.stage, "(for debugging usage only)");
-    command_line.add_option("--stop-p", params.stop_p, "(for debugging usage only)");
-
-    command_line.add_option("--postfix", params.postfix, "(for debugging usage only)");
-    command_line.add_option("--log", params.log_path, "Log info to given file.");
-    command_line.add_option("--level", params.log_level, "Log level (0 = most verbose, 6 = off).");
-
-    command_line.add_flag("-q,--is-quiet", params.is_quiet, "Mute console output. (optional)");
-    command_line.add_flag("--skip-simplify", skip_simplify, "skip preprocessing.");
-    command_line.add_flag("--not-sort-input", params.not_sort_input, "(for debugging usage only)");
-    command_line.add_flag("--correct-surface-orientation",
-                          params.correct_surface_orientation,
-                          "(for debugging usage only)");
-
-    command_line.add_flag(
-      "--smooth-open-boundary", params.smooth_open_boundary, "Smooth the open boundary.");
-    command_line.add_flag(
-      "--manifold-surface", params.manifold_surface, "Force the output to be manifold.");
-    command_line.add_flag("--coarsen", params.coarsen, "Coarsen the output as much as possible.");
-
-    command_line.add_flag(
-      "--use-old-energy", floatTetWild::use_old_energy, "(for debugging usage only)");  // tmp
-
-    command_line.add_flag(
-      "--disable-filtering", params.disable_filtering, "Disable filtering out outside elements.");
-    command_line.add_flag(
-      "--use-floodfill", params.use_floodfill, "Use flood-fill to extract interior volume.");
-    command_line.add_flag("--use-general-wn", params.use_general_wn, "Use general winding number.");
-    command_line.add_flag(
-      "--use-input-for-wn", params.use_input_for_wn, "Use input surface for winding number.");
-
-    std::string background_mesh = "";
-    command_line
-      .add_option("--bg-mesh", background_mesh, "Background mesh for sizing field (.msh file).")
-      ->check(CLI::ExistingFile);
 
 #ifdef NEW_ENVELOPE
     std::string epsr_tags;
@@ -144,7 +111,7 @@ int main(int argc, char** argv)
     unsigned int num_threads = std::max(1u, std::thread::hardware_concurrency());
     num_threads              = std::min(max_threads, num_threads);
     params.num_threads       = num_threads;
-    std::cout << "TBB threads " << num_threads << std::endl;
+
     tbb::task_scheduler_init scheduler(num_threads, stack_size);
 #endif
 
@@ -177,12 +144,7 @@ int main(int argc, char** argv)
     Eigen::VectorXd V_in;
     Eigen::VectorXi T_in;
     Eigen::VectorXd values;
-    if (!background_mesh.empty()) {
-        PyMesh::MshLoader mshLoader(background_mesh);
-        V_in   = mshLoader.get_nodes();
-        T_in   = mshLoader.get_elements();
-        values = mshLoader.get_node_field("values");
-    }
+
     if (V_in.rows() != 0 && T_in.rows() != 0 && values.rows() != 0) {
         params.apply_sizing_field = true;
 
