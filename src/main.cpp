@@ -69,7 +69,7 @@ int main(int argc, char** argv){
 
 
     //Tetrahedralize.
-    auto mesh = fTetWildRun(Vertices, Faces, ideal_edge_length_rel, "output", true, max_threads);
+    auto mesh = fTetWildRun(Vertices, Faces, ideal_edge_length_rel, "output", false, max_threads);
 
 
     return EXIT_SUCCESS;

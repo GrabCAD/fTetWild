@@ -45,7 +45,7 @@ std::pair<Eigen::MatrixXf, Eigen::Matrix4Xi> fTetWildRun(const Eigen::MatrixXf &
 
     Mesh        mesh;
     Parameters& params = mesh.params;
-
+Quiet=true;
     if(Quiet){
         params.log_level = 6;
         params.is_quiet = true;
@@ -140,18 +140,38 @@ std::pair<Eigen::MatrixXf, Eigen::Matrix4Xi> fTetWildRun(const Eigen::MatrixXf &
 
 
     simplify(input_vertices, input_faces, input_tags, tree, params, skip_simplify);
+
     tree.init_b_mesh_and_tree(input_vertices, input_faces, mesh);
 
     std::vector<bool> is_face_inserted(input_faces.size(), false);
     FloatTetDelaunay::tetrahedralize(input_vertices, input_faces, tree, mesh, is_face_inserted);
 //Ben S note: does this lib contain a Delaunay tetrahedralize function? If so and if it's any good, consider just running it on a Poisson disk sampled point cloud.
+
+//cout << mesh.get_avg_energy() << "\n";
+//cout << mesh.get_max_energy() << "\n";
+//cout << mesh.get_t_num() << "\n";
+//cout << mesh.get_v_num() << "\n\n";
+
     insert_triangles(input_vertices, input_faces, input_tags, mesh, is_face_inserted, tree, false);
+
+//cout << mesh.get_avg_energy() << "\n";
+//cout << mesh.get_max_energy() << "\n";
+//cout << mesh.get_t_num() << "\n";
+//cout << mesh.get_v_num() << "\n\n";
 
     optimization(
       input_vertices, input_faces, input_tags, is_face_inserted, mesh, tree, {{1, 1, 1, 1}});
 
-    correct_tracked_surface_orientation(mesh, tree);
+//cout << mesh.get_avg_energy() << "\n";
+//cout << mesh.get_max_energy() << "\n";
+//cout << mesh.get_t_num() << "\n";
+//cout << mesh.get_v_num() << "\n\n";
 
+    correct_tracked_surface_orientation(mesh, tree);
+//cout << mesh.get_avg_energy() << "\n";
+//cout << mesh.get_max_energy() << "\n";
+//cout << mesh.get_t_num() << "\n";
+//cout << mesh.get_v_num() << "\n\n";
 
     if (params.smooth_open_boundary) {
         smooth_open_boundary(mesh, tree);

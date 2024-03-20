@@ -116,7 +116,9 @@ namespace floatTetWild {
 		// std::sort(indices.begin(), indices.end(), [&](const int i, const int j){ return weights[i] < weights[j]; });
 		std::vector<int> indices(edges.size());
 		std::iota(std::begin(indices), std::end(indices), 0);
-		floatTetWild::Random::shuffle(indices);
+
+		std::mt19937 rng;
+		std::shuffle(indices.begin(), indices.end(), rng);
 
 		std::vector<bool> unsafe_face(f_is_removed.size(), false);
 		safe_set.clear();
