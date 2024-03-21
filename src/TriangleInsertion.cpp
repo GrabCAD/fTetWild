@@ -281,8 +281,18 @@ void floatTetWild::insert_triangles_aux(const std::vector<Vector3> &input_vertic
 {
 //OH YOU'VE BEEN BARKING UP THE WRONG TREE.
 //Dang. First two aren't deterministic at this point. Hah.
-cout << fnv_32_buf(mesh.tets.data(), mesh.tets.size()*sizeof(decltype(mesh.tets.front()))) << "\n";
-cout << fnv_32_buf(mesh.tet_vertices.data(), mesh.tet_vertices.size()*sizeof(decltype(mesh.tet_vertices.front()))) << "\n";
+//or possibly not - both of below have, for each element, pointers. Pointers have random addresses. Dig deeper.
+//cout << fnv_32_buf(mesh.tets.data(), mesh.tets.size()*sizeof(decltype(mesh.tets.front()))) << "\n";
+//cout << fnv_32_buf(mesh.tet_vertices.data(), mesh.tet_vertices.size()*sizeof(decltype(mesh.tet_vertices.front()))) << "\n";
+
+uint32_t hash = 0;
+for(const auto &e : mesh.tets)
+    hash = fnv_32_buf(e.indices.data(), 4*4, hash);
+for(const auto &e : mesh.tet_vertices)
+    hash = fnv_32_buf(e.pos.data(), 3*4, hash);
+cout << hash << " -\n";
+//nvm it's probably not mesh, probably barking up right tree
+
 cout << fnv_32_buf(input_vertices.data(), 3*8*input_vertices.size()) << "\n";
 cout << fnv_32_buf(input_faces.data(), 3*4*input_faces.size()) << "\n";
 cout << fnv_32_buf(input_tags.data(), 4*input_tags.size()) << "\n";
