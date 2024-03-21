@@ -52,6 +52,8 @@ Quiet=true;
         spdlog::set_level(spdlog::level::off);
     }
 
+    params.ideal_edge_length_rel = ideal_edge_length_rel;
+
 #ifdef FLOAT_TETWILD_USE_TBB
     const size_t MB          = 1024 * 1024;
     const size_t stack_size  = 64 * MB;

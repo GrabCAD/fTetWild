@@ -58,45 +58,6 @@ void floatTetWild::CutMesh::construct(const std::vector<int>& cut_t_ids) {
                            map_v_ids[mesh.tets[cut_t_ids[i]][2]],
                            map_v_ids[mesh.tets[cut_t_ids[i]][3]]}};
     }
-
-//    std::vector<std::vector<int>> conn_tets(v_ids.size());
-//    for (int i = 0; i < tets.size(); i++) {
-//        for (int j = 0; j < 4; j++)
-//            conn_tets[tets[i][j]].push_back(i);
-//    }
-//
-//    timer.start();
-//    opp_t_ids.resize(tets.size(), {{-1, -1, -1, -1}});
-//    time_cut_mesh12 += timer.getElapsedTime();
-//
-//    for (int i = 0; i < tets.size(); i++) {//todo: construct conn_tets/opp_t_ids only when expension is required.
-//        for (int j = 0; j < 4; j++) {
-//            if (opp_t_ids[i][j] >= 0)
-//                continue;
-//
-//            timer.start();
-//            std::vector<int> n_t_ids;
-//            set_intersection_sorted(conn_tets[tets[i][(j + 1) % 4]], conn_tets[tets[i][(j + 2) % 4]],
-//                                    conn_tets[tets[i][(j + 3) % 4]], n_t_ids);
-//
-//            time_cut_mesh13 += timer.getElapsedTime();
-//            assert(!n_t_ids.empty());
-//            if (n_t_ids.size() < 2)
-//                continue;
-//
-//            timer.start();
-//            int n_t_id = n_t_ids[0] == i ? n_t_ids[1] : n_t_ids[0];
-//            opp_t_ids[i][j] = n_t_id;
-//            for (int k = 0; k < 4; k++) {
-//                if (tets[n_t_id][k] != tets[i][(j + 1) % 4] && tets[n_t_id][k] != tets[i][(j + 2) % 4]
-//                    && tets[n_t_id][k] != tets[i][(j + 3) % 4]) {
-//                    opp_t_ids[n_t_id][k] = i;
-//                    break;
-//                }
-//            }
-//            time_cut_mesh14 += timer.getElapsedTime();
-//        }
-//    }
 }
 
 bool floatTetWild::CutMesh::snap_to_plane() {
@@ -617,31 +578,14 @@ bool floatTetWild::CutMesh::get_intersecting_edges_and_points(std::vector<Vector
             return false;
         }
 
-//        Scalar dist1 = (p-mesh.tet_vertices[v1_id].pos).squaredNorm();
-//        Scalar dist2 = (p-mesh.tet_vertices[v2_id].pos).squaredNorm();
-//        if(dist1 <= SCALAR_ZERO_2){
-//            cout<<"snapped e[0]"<<endl;
-//            is_snapped[e[0]] = true;
-//            continue;
-//        }
-//        if(dist2 <= SCALAR_ZERO_2){
-//            cout<<"snapped e[1]"<<endl;
-//            is_snapped[e[1]] = true;
-//            continue;
-//        }
 
-//        timer.start();
         points.push_back(p);
         if (v1_id < v2_id)
             map_edge_to_intersecting_point[{{v1_id, v2_id}}] = points.size() - 1;
         else
             map_edge_to_intersecting_point[{{v2_id, v1_id}}] = points.size() - 1;
-//        time_get_intersecting_edges_and_points3 += timer.getElapsedTime();
 
-//        timer.start();
-//        std::vector<int> tmp;
-//        set_intersection(mesh.tet_vertices[v1_id].conn_tets, mesh.tet_vertices[v2_id].conn_tets, tmp);
-//        subdivide_t_ids.insert(subdivide_t_ids.end(), tmp.begin(), tmp.end());
+
         e_v_ids.push_back(v1_id);
         e_v_ids.push_back(v2_id);
 //        time_get_intersecting_edges_and_points4 += timer.getElapsedTime();
