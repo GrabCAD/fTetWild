@@ -42,6 +42,131 @@
 #define III -1
 
 
+
+
+
+//Hashes everything that insert_one_triangle deals with, for finding source of stochasticity.
+namespace floatTetWild {
+uint32_t insert_one_triangle_Hash(int insert_f_id, const std::vector<Vector3> &input_vertices,
+        const std::vector<Vector3i> &input_faces, const std::vector<int> &input_tags,
+        Mesh &mesh, std::vector<std::array<std::vector<int>, 4>>& track_surface_fs,
+        const AABBWrapper &tree, bool is_again) {
+
+    //from http://isthe.com/chongo/src/fnv/hash_32.c
+
+    /*
+     * fnv_32_buf - perform a 32 bit Fowler/Noll/Vo hash on a buffer
+     *
+     * input:
+     *	buf	- start of buffer to hash
+     *	len	- length of buffer in octets
+     *	hval	- previous hash value or 0 if first call
+     *
+     * returns:
+     *	32 bit hash as a static hash type
+     *
+     * NOTE: To use the 32 bit FNV-0 historic hash, use FNV0_32_INIT as the hval
+     *	 argument on the first call to either fnv_32_buf() or fnv_32_str().
+     *
+     * NOTE: To use the recommended 32 bit FNV-1 hash, use FNV1_32_INIT as the hval
+     *	 argument on the first call to either fnv_32_buf() or fnv_32_str().
+     */
+    auto fnv_32_buf = [](const void *buf, size_t len, uint32_t hval = 0){
+        const unsigned char *bp = (const unsigned char *)buf;	/* start of buffer */
+        const unsigned char *be = bp + len;		/* beyond end of buffer */
+
+        /*
+         * FNV-1 hash each octet in the buffer
+         */
+        while (bp < be) {
+	        /* multiply by the 32 bit FNV magic prime mod 2^32 */
+	        hval *= 0x01000193;
+
+	        /* xor the bottom with the current octet */
+	        hval ^= 1 + (uint32_t)*bp++;
+        }
+
+        /* return our new hash value */
+        return hval;
+    };
+
+    //Hash a single bool. Separate because false is guaranteeed zero and true is only guaranteed nonzero
+    auto fnv_32_bool = [&fnv_32_buf](bool b, uint32_t hval = 0){
+        unsigned char buf = 0;
+        if(b) buf = 1;
+
+        return fnv_32_buf(&buf, 1, hval);
+    };
+
+
+
+    uint32_t hash = fnv_32_buf(&insert_f_id, sizeof(int));
+
+    for(const auto &e : input_vertices) hash = fnv_32_buf(e.data(), 3*sizeof(Scalar), hash);
+    for(const auto &e : input_faces) hash = fnv_32_buf(e.data(), 3*sizeof(int), hash);
+    for(const auto &e : input_tags) hash = fnv_32_buf(&e, sizeof(int), hash);
+
+    for(const auto &a : track_surface_fs)
+        for(const auto &b : a)
+            for(const auto &c : b)
+                hash = fnv_32_buf(&c, sizeof(int), hash);
+
+    //mesh
+    for(const auto &e : mesh.tet_vertices){
+        hash = fnv_32_buf(e.pos.data(), 3*sizeof(Scalar), hash);
+        hash = fnv_32_buf(e.conn_tets.data(), e.conn_tets.size()*sizeof(int), hash);
+
+        hash = fnv_32_bool(e.is_on_surface , hash);
+        hash = fnv_32_bool(e.is_on_boundary, hash);
+        hash = fnv_32_bool(e.is_on_cut     , hash);
+        hash = fnv_32_bool(e.is_on_bbox    , hash);
+        hash = fnv_32_bool(e.is_outside    , hash);
+        hash = fnv_32_bool(e.is_removed    , hash);
+        hash = fnv_32_bool(e.is_freezed    , hash);
+
+        hash = fnv_32_buf(&e.on_boundary_e_id, sizeof(int), hash);
+        hash = fnv_32_buf(&e.sizing_scalar, sizeof(Scalar), hash);
+        hash = fnv_32_buf(&e.scalar, sizeof(Scalar), hash);
+    }
+
+    for(const auto &e : mesh.tets){
+        hash = fnv_32_buf(e.indices.data(), 4*sizeof(int), hash);
+
+        hash = fnv_32_buf(e.is_surface_fs.data(), 4*sizeof(char), hash);
+        hash = fnv_32_buf(e.is_bbox_fs   .data(),    4*sizeof(char), hash);
+        hash = fnv_32_buf(e.opp_t_ids    .data(),     4*sizeof(int), hash);
+        hash = fnv_32_buf(e.surface_tags .data(),  4*sizeof(char), hash);
+
+        hash = fnv_32_buf(&e.quality, sizeof(Scalar), hash);
+        hash = fnv_32_buf(&e.scalar, sizeof(Scalar), hash);
+
+        hash = fnv_32_bool(e.is_removed, hash);
+        hash = fnv_32_bool(e.is_outside, hash);
+    }
+
+//params structure not hashed
+
+    hash = fnv_32_buf(&mesh.t_empty_start, sizeof(int), hash);
+    hash = fnv_32_buf(&mesh.v_empty_start, sizeof(int), hash);
+    hash = fnv_32_bool(mesh.is_limit_length      , hash);
+    hash = fnv_32_bool(mesh.is_closed            , hash);
+    hash = fnv_32_bool(mesh.is_input_all_inserted, hash);
+    hash = fnv_32_bool(mesh.is_coarsening        , hash);
+
+    //tree
+//...
+
+    hash = fnv_32_bool(is_again, hash);
+
+    return hash;
+}
+}
+
+
+
+
+
+
 std::vector<std::array<int, 3>> covered_tet_fs;//fortest
 //fortest
 
@@ -203,50 +328,6 @@ void floatTetWild::optimize_non_surface(const std::vector<Vector3> &input_vertic
 #include "geogram/mesh/mesh_io.h"
 
 
-
-//from http://isthe.com/chongo/src/fnv/hash_32.c
-
-
-/*
- * fnv_32_buf - perform a 32 bit Fowler/Noll/Vo hash on a buffer
- *
- * input:
- *	buf	- start of buffer to hash
- *	len	- length of buffer in octets
- *	hval	- previous hash value or 0 if first call
- *
- * returns:
- *	32 bit hash as a static hash type
- *
- * NOTE: To use the 32 bit FNV-0 historic hash, use FNV0_32_INIT as the hval
- *	 argument on the first call to either fnv_32_buf() or fnv_32_str().
- *
- * NOTE: To use the recommended 32 bit FNV-1 hash, use FNV1_32_INIT as the hval
- *	 argument on the first call to either fnv_32_buf() or fnv_32_str().
- */
-uint32_t fnv_32_buf(const void *buf, size_t len, uint32_t hval = 0){
-    const unsigned char *bp = (const unsigned char *)buf;	/* start of buffer */
-    const unsigned char *be = bp + len;		/* beyond end of buffer */
-
-    /*
-     * FNV-1 hash each octet in the buffer
-     */
-    while (bp < be) {
-	    /* multiply by the 32 bit FNV magic prime mod 2^32 */
-	    hval *= 0x01000193;
-
-	    /* xor the bottom with the current octet */
-	    hval ^= (uint32_t)*bp++;
-    }
-
-    /* return our new hash value */
-    return hval;
-}
-
-
-
-
-
 void floatTetWild::insert_triangles_aux(const std::vector<Vector3> &input_vertices,
         const std::vector<Vector3i> &input_faces, const std::vector<int> &input_tags,
         Mesh &mesh, std::vector<bool> &is_face_inserted,
@@ -260,6 +341,13 @@ void floatTetWild::insert_triangles_aux(const std::vector<Vector3> &input_vertic
     if (!is_again) {
         match_surface_fs(mesh, input_vertices, input_faces, is_face_inserted, track_surface_fs);
     }
+
+//STochastic here. track_surface_fs and mesh, the first one very likely because of the last.
+//cout << 
+//    insert_one_triangle_Hash(0, input_vertices, input_faces, input_tags, mesh, track_surface_fs, tree, is_again) << "\n";
+//exit(1);
+
+
     int cnt_matched = std::count(is_face_inserted.begin(), is_face_inserted.end(), true);
     logger().info("matched #f = {}, uninserted #f = {}", cnt_matched, is_face_inserted.size() - cnt_matched);
 
@@ -273,6 +361,7 @@ void floatTetWild::insert_triangles_aux(const std::vector<Vector3> &input_vertic
     int cnt_total = 0;
 
 
+/*
 //These seem to be deterministic.
 //GEO::mesh_save(tree.b_mesh, R"(C:\Ik\Contracting\MODit\Code\fTetWild\_build\huh.ply)");
 //GEO::mesh_save(tree.tmp_b_mesh, R"(C:\Ik\Contracting\MODit\Code\fTetWild\_build\huhh.ply)");
@@ -312,12 +401,16 @@ cout << mesh.get_v_num() << "\n\n";
 
 }
 //Most of the input to this function (or really everything up to here) has been checked and is perfectly deterministic.
-
+*/
 
     for (int i = 0; i < sorted_f_ids.size(); i++) {
         int f_id = sorted_f_ids[i];
         if (is_face_inserted[f_id])
             continue;
+
+//cout << 
+//    f_id << ", " << 
+//    insert_one_triangle_Hash(f_id, input_vertices, input_faces, input_tags, mesh, track_surface_fs, tree, is_again) << "\n";
 
         cnt_total++;
         if (insert_one_triangle(f_id, input_vertices, input_faces, input_tags, mesh, track_surface_fs, tree, is_again))
@@ -328,7 +421,7 @@ cout << mesh.get_v_num() << "\n\n";
         if (f_id == III)
             break;//fortest
     }
-
+/*
 {
 //sss is stochastic at this point but is_face_inserted count is not.
 uint64_t sss = 0;
@@ -343,9 +436,10 @@ cout << mesh.get_avg_energy() << "\n";
 cout << mesh.get_max_energy() << "\n";
 cout << mesh.get_t_num() << "\n";
 cout << mesh.get_v_num() << "\n\n";
-}
+}*/
 
-exit(0);
+
+cout << insert_one_triangle_Hash(0, input_vertices, input_faces, input_tags, mesh, track_surface_fs, tree, is_again) << "\n";
 
 
     logger().info("insert_one_triangle * n done, #v = {}, #t = {}", mesh.tet_vertices.size(), mesh.tets.size());
@@ -499,7 +593,7 @@ bool floatTetWild::insert_multi_triangles(int insert_f_id, const std::vector<Vec
 bool floatTetWild::insert_one_triangle(int insert_f_id, const std::vector<Vector3> &input_vertices,
         const std::vector<Vector3i> &input_faces, const std::vector<int> &input_tags,
         Mesh &mesh, std::vector<std::array<std::vector<int>, 4>>& track_surface_fs,
-        AABBWrapper &tree, bool is_again) {
+        const AABBWrapper &tree, bool is_again) {
 
     std::array<Vector3, 3> vs = {{input_vertices[input_faces[insert_f_id][0]],
                                          input_vertices[input_faces[insert_f_id][1]],
@@ -605,8 +699,8 @@ void floatTetWild::push_new_tets(Mesh &mesh, std::vector<std::array<std::vector<
 }
 
 #include <floattetwild/EdgeCollapsing.h>
-void floatTetWild::simplify_subdivision_result(int insert_f_id, int input_v_size, Mesh &mesh, AABBWrapper &tree,
-        std::vector<std::array<std::vector<int>, 4>> &track_surface_fs) {
+void floatTetWild::simplify_subdivision_result(int insert_f_id, int input_v_size, Mesh &mesh, const AABBWrapper &tree,
+        const std::vector<std::array<std::vector<int>, 4>> &track_surface_fs) {
     if(covered_tet_fs.empty())
         return;
 
@@ -734,54 +828,7 @@ void floatTetWild::simplify_subdivision_result(int insert_f_id, int input_v_size
             }
             cnt_suc++;
         }
-
-//        ////
-//        std::vector<int> n12_t_ids;
-//        set_intersection(mesh.tet_vertices[v1_id].conn_tets, mesh.tet_vertices[v2_id].conn_tets, n12_t_ids);
-//        std::vector<int> n1_t_ids;//v1.conn_tets - n12_t_ids
-//        std::sort(mesh.tet_vertices[v1_id].conn_tets.begin(), mesh.tet_vertices[v1_id].conn_tets.end());
-//        std::sort(n12_t_ids.begin(), n12_t_ids.end());
-//        std::set_difference(mesh.tet_vertices[v1_id].conn_tets.begin(), mesh.tet_vertices[v1_id].conn_tets.end(),
-//                            n12_t_ids.begin(), n12_t_ids.end(), std::back_inserter(n1_t_ids));
-//
-//        //inversion
-//        std::vector<int> js_n1_t_ids;
-//        for (int t_id:n1_t_ids) {
-//            int j = mesh.tets[t_id].find(v1_id);
-//            js_n1_t_ids.push_back(j);
-//            if (is_inverted(mesh, t_id, j, mesh.tet_vertices[v2_id].pos)) {
-//                is_valid = false;
-//                break;
-//            }
-//        }
-//        if (!is_valid)
-//            continue;
-//
-//        //check quality
-//        //todo
-//
-//        //real update
-//        mesh.tet_vertices[v2_id].pos = mesh.tet_vertices[v1_id].pos;
-//        int ii = 0;
-//        for (int t_id:n1_t_ids) {
-//            int j = js_n1_t_ids[ii++];
-//            mesh.tets[t_id][j] = v2_id;
-//            mesh.tet_vertices[v2_id].conn_tets.push_back(t_id);
-//        }
-//        for (int t_id: n12_t_ids) {
-//            mesh.tets[t_id].is_removed = true;
-//            for (int j = 0; j < 4; j++) {
-//                if (mesh.tets[t_id][j] != v1_id)
-//                    vector_erase(mesh.tet_vertices[mesh.tets[t_id][j]].conn_tets, t_id);
-//            }
-//        }
-//        mesh.tet_vertices[v1_id].is_removed = true;
-//        mesh.tet_vertices[v1_id].conn_tets.clear();
-//
-//        cnt_suc++;
     }
-//    if (cnt_suc > 0)
-//        cout << "cnt_suc = " << cnt_suc << endl;
 }
 
 void floatTetWild::find_cutting_tets(int f_id, const std::vector<Vector3> &input_vertices, const std::vector<Vector3i> &input_faces,

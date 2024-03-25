@@ -33,6 +33,86 @@ using namespace Eigen;
 
 
 
+
+
+/*
+namespace floatTetWild {
+uint32_t HashProbe(Mesh &mesh) {
+
+    //from http://isthe.com/chongo/src/fnv/hash_32.c
+    auto fnv_32_buf = [](const void *buf, size_t len, uint32_t hval = 0){
+        const unsigned char *bp = (const unsigned char *)buf;
+        const unsigned char *be = bp + len;
+
+        while (bp < be) {
+	        hval *= 0x01000193;
+	        hval ^= 1 + (uint32_t)*bp++;
+        }
+
+        return hval;
+    };
+
+    //Hash a single bool. Separate because false is guaranteeed zero and true is only guaranteed nonzero
+    auto fnv_32_bool = [&fnv_32_buf](bool b, uint32_t hval = 0){
+        unsigned char buf = 0;
+        if(b) buf = 1;
+
+        return fnv_32_buf(&buf, 1, hval);
+    };
+
+
+    uint32_t hash = 0;
+
+    //mesh
+    for(const auto &e : mesh.tet_vertices){
+        hash = fnv_32_buf(e.pos.data(), 3*sizeof(Scalar), hash);
+        hash = fnv_32_buf(e.conn_tets.data(), e.conn_tets.size()*sizeof(int), hash);
+
+        hash = fnv_32_bool(e.is_on_surface , hash);
+        hash = fnv_32_bool(e.is_on_boundary, hash);
+        hash = fnv_32_bool(e.is_on_cut     , hash);
+        hash = fnv_32_bool(e.is_on_bbox    , hash);
+        hash = fnv_32_bool(e.is_outside    , hash);
+        hash = fnv_32_bool(e.is_removed    , hash);
+        hash = fnv_32_bool(e.is_freezed    , hash);
+
+        hash = fnv_32_buf(&e.on_boundary_e_id, sizeof(int), hash);
+        hash = fnv_32_buf(&e.sizing_scalar, sizeof(Scalar), hash);
+        hash = fnv_32_buf(&e.scalar, sizeof(Scalar), hash);
+    }
+
+    for(const auto &e : mesh.tets){
+        hash = fnv_32_buf(e.indices.data(), 4*sizeof(int), hash);
+
+        hash = fnv_32_buf(e.is_surface_fs.data(), 4*sizeof(char), hash);
+        hash = fnv_32_buf(e.is_bbox_fs   .data(),    4*sizeof(char), hash);
+        hash = fnv_32_buf(e.opp_t_ids    .data(),     4*sizeof(int), hash);
+        hash = fnv_32_buf(e.surface_tags .data(),  4*sizeof(char), hash);
+
+        hash = fnv_32_buf(&e.quality, sizeof(Scalar), hash);
+        hash = fnv_32_buf(&e.scalar, sizeof(Scalar), hash);
+
+        hash = fnv_32_bool(e.is_removed, hash);
+        hash = fnv_32_bool(e.is_outside, hash);
+    }
+
+    hash = fnv_32_buf(&mesh.t_empty_start, sizeof(int), hash);
+    hash = fnv_32_buf(&mesh.v_empty_start, sizeof(int), hash);
+    hash = fnv_32_bool(mesh.is_limit_length      , hash);
+    hash = fnv_32_bool(mesh.is_closed            , hash);
+    hash = fnv_32_bool(mesh.is_input_all_inserted, hash);
+    hash = fnv_32_bool(mesh.is_coarsening        , hash);
+
+    return hash;
+}
+}*/
+
+
+
+
+
+
+
 std::pair<Eigen::MatrixXf, Eigen::Matrix4Xi> fTetWildRun(const Eigen::MatrixXf &Vertices, const Eigen::Matrix3Xi &Faces, floatTetWild::Scalar ideal_edge_length_rel, std::string OutputName, bool Quiet, unsigned int max_threads){
 #ifndef WIN32
     setenv("GEO_NO_SIGNAL_HANDLER", "1", 1);
@@ -130,25 +210,16 @@ Quiet=true;
     AABBWrapper tree(sf_mesh);
 
     if (!params.init(tree.get_sf_diag()))
-        std::make_pair(MatrixXf(), Matrix4Xi());
-
-#ifdef NEW_ENVELOPE
-    if (!epsr_tags.empty())
-        tree.init_sf_tree(
-          input_vertices, input_faces, params.input_epsr_tags, params.bbox_diag_length);
-    else
-        tree.init_sf_tree(input_vertices, input_faces, params.eps);
-#endif
-
+        return std::make_pair(MatrixXf(), Matrix4Xi());
 
     simplify(input_vertices, input_faces, input_tags, tree, params, skip_simplify);
 
     tree.init_b_mesh_and_tree(input_vertices, input_faces, mesh);
-
+//cout << HashProbe(mesh) << "\n";
     std::vector<bool> is_face_inserted(input_faces.size(), false);
     FloatTetDelaunay::tetrahedralize(input_vertices, input_faces, tree, mesh, is_face_inserted);
 //Ben S note: does this lib contain a Delaunay tetrahedralize function? If so and if it's any good, consider just running it on a Poisson disk sampled point cloud.
-
+//cout << HashProbe(mesh) << "\n"; exit(0);
 //cout << mesh.get_avg_energy() << "\n";
 //cout << mesh.get_max_energy() << "\n";
 //cout << mesh.get_t_num() << "\n";

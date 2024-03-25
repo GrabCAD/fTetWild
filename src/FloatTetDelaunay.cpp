@@ -23,6 +23,118 @@
 #include <floattetwild/MeshIO.hpp>
 
 namespace floatTetWild {
+
+
+
+uint32_t HashProbe(Mesh &mesh, Vector3 min, Vector3 max, const std::vector<Vector3> &boxpoints, const std::vector<Vector3> &voxel_points, const std::vector<double> &V_d) {
+    //from http://isthe.com/chongo/src/fnv/hash_32.c
+
+    /*
+     * fnv_32_buf - perform a 32 bit Fowler/Noll/Vo hash on a buffer
+     *
+     * input:
+     *	buf	- start of buffer to hash
+     *	len	- length of buffer in octets
+     *	hval	- previous hash value or 0 if first call
+     *
+     * returns:
+     *	32 bit hash as a static hash type
+     *
+     * NOTE: To use the 32 bit FNV-0 historic hash, use FNV0_32_INIT as the hval
+     *	 argument on the first call to either fnv_32_buf() or fnv_32_str().
+     *
+     * NOTE: To use the recommended 32 bit FNV-1 hash, use FNV1_32_INIT as the hval
+     *	 argument on the first call to either fnv_32_buf() or fnv_32_str().
+     */
+    auto fnv_32_buf = [](const void *buf, size_t len, uint32_t hval = 0){
+        const unsigned char *bp = (const unsigned char *)buf;	/* start of buffer */
+        const unsigned char *be = bp + len;		/* beyond end of buffer */
+
+        /*
+         * FNV-1 hash each octet in the buffer
+         */
+        while (bp < be) {
+	        /* multiply by the 32 bit FNV magic prime mod 2^32 */
+	        hval *= 0x01000193;
+
+	        /* xor the bottom with the current octet */
+	        hval ^= 1 + (uint32_t)*bp++;
+        }
+
+        /* return our new hash value */
+        return hval;
+    };
+
+    //Hash a single bool. Separate because false is guaranteeed zero and true is only guaranteed nonzero
+    auto fnv_32_bool = [&fnv_32_buf](bool b, uint32_t hval = 0){
+        unsigned char buf = 0;
+        if(b) buf = 1;
+
+        return fnv_32_buf(&buf, 1, hval);
+    };
+
+
+    uint32_t hash = 0;
+
+
+    //mesh
+    for(const auto &e : mesh.tet_vertices){
+        hash = fnv_32_buf(e.pos.data(), 3*sizeof(Scalar), hash);
+        hash = fnv_32_buf(e.conn_tets.data(), e.conn_tets.size()*sizeof(int), hash);
+
+        hash = fnv_32_bool(e.is_on_surface , hash);
+        hash = fnv_32_bool(e.is_on_boundary, hash);
+        hash = fnv_32_bool(e.is_on_cut     , hash);
+        hash = fnv_32_bool(e.is_on_bbox    , hash);
+        hash = fnv_32_bool(e.is_outside    , hash);
+        hash = fnv_32_bool(e.is_removed    , hash);
+        hash = fnv_32_bool(e.is_freezed    , hash);
+
+        hash = fnv_32_buf(&e.on_boundary_e_id, sizeof(int), hash);
+        hash = fnv_32_buf(&e.sizing_scalar, sizeof(Scalar), hash);
+        hash = fnv_32_buf(&e.scalar, sizeof(Scalar), hash);
+    }
+
+    for(const auto &e : mesh.tets){
+        hash = fnv_32_buf(e.indices.data(), 4*sizeof(int), hash);
+
+        hash = fnv_32_buf(e.is_surface_fs.data(), 4*sizeof(char), hash);
+        hash = fnv_32_buf(e.is_bbox_fs   .data(),    4*sizeof(char), hash);
+        hash = fnv_32_buf(e.opp_t_ids    .data(),     4*sizeof(int), hash);
+        hash = fnv_32_buf(e.surface_tags .data(),  4*sizeof(char), hash);
+
+        hash = fnv_32_buf(&e.quality, sizeof(Scalar), hash);
+        hash = fnv_32_buf(&e.scalar, sizeof(Scalar), hash);
+
+        hash = fnv_32_bool(e.is_removed, hash);
+        hash = fnv_32_bool(e.is_outside, hash);
+    }
+
+    hash = fnv_32_buf(&mesh.t_empty_start, sizeof(int), hash);
+    hash = fnv_32_buf(&mesh.v_empty_start, sizeof(int), hash);
+    hash = fnv_32_bool(mesh.is_limit_length      , hash);
+    hash = fnv_32_bool(mesh.is_closed            , hash);
+    hash = fnv_32_bool(mesh.is_input_all_inserted, hash);
+    hash = fnv_32_bool(mesh.is_coarsening        , hash);
+
+
+    hash = fnv_32_buf(min.data(), 3*sizeof(Scalar), hash);
+    hash = fnv_32_buf(max.data(), 3*sizeof(Scalar), hash);
+    for(const auto &e : boxpoints) hash = fnv_32_buf(e.data(), 3*sizeof(Scalar), hash);
+    for(const auto &e : voxel_points) hash = fnv_32_buf(e.data(), 3*sizeof(Scalar), hash);
+
+    hash = fnv_32_buf(V_d.data(), V_d.size()*sizeof(double), hash);
+
+    return hash;
+}
+
+
+
+
+
+
+
+
 	namespace {
         void
         get_bb_corners(const Parameters &params, const std::vector<Vector3> &vertices, Vector3 &min, Vector3 &max) {
@@ -175,16 +287,6 @@ namespace floatTetWild {
         mesh.params.bbox_max = max;
 
         std::vector<Vector3> boxpoints; //(8);
-        // for (int i = 0; i < 8; i++) {
-        //     auto &p = boxpoints[i];
-        //     std::bitset<sizeof(int) * 8> flag(i);
-        //     for (int j = 0; j < 3; j++) {
-        //         if (flag.test(j))
-        //             p[j] = max[j];
-        //         else
-        //             p[j] = min[j];
-        //     }
-        // }
 
 
         std::vector<Vector3> voxel_points;
@@ -199,23 +301,14 @@ namespace floatTetWild {
         int offset = 0;
         for (int i = 0; i < input_vertices.size(); i++) {
             tet_vertices[offset + i].pos = input_vertices[i];
-            // tet_vertices[offset + i].is_on_surface = true;
-//            for (int j = 0; j < 3; j++)
-//                V_d[index++] = input_vertices[i](j);
         }
         offset += input_vertices.size();
         for (int i = 0; i < boxpoints.size(); i++) {
             tet_vertices[i + offset].pos = boxpoints[i];
-            // tet_vertices[i + offset].is_on_bbox = true;
-//            for (int j = 0; j < 3; j++)
-//                V_d[index++] = boxpoints[i](j);
         }
         offset += boxpoints.size();
         for (int i = 0; i < voxel_points.size(); i++) {
             tet_vertices[i + offset].pos = voxel_points[i];
-            // tet_vertices[i + offset].is_on_bbox = false;
-//            for (int j = 0; j < 3; j++)
-//                V_d[index++] = voxel_points[i](j);
         }
 
         std::vector<double> V_d;
@@ -224,7 +317,7 @@ namespace floatTetWild {
             for (int j = 0; j < 3; j++)
                 V_d[i * 3 + j] = tet_vertices[i].pos[j];
         }
-
+//cout << HashProbe(mesh, min, max, boxpoints, voxel_points, V_d) << "\n";
         GEO::Delaunay::initialize();
         GEO::Delaunay_var T = GEO::Delaunay::create(3, "BDEL");
         T->set_vertices(n_pts, V_d.data());
@@ -240,7 +333,7 @@ namespace floatTetWild {
             }
             std::swap(tets[i][1], tets[i][3]);
         }
-
+//cout << HashProbe(mesh, min, max, boxpoints, voxel_points, V_d) << "\n"; exit(0);
         for (int i = 0; i < mesh.tets.size(); i++) {
             auto &t = mesh.tets[i];
             if (is_inverted(mesh.tet_vertices[t[0]].pos, mesh.tet_vertices[t[1]].pos,
@@ -250,83 +343,7 @@ namespace floatTetWild {
             }
         }
 
-        //fortest
-//        Eigen::MatrixXd VV(mesh.tet_vertices.size(), 3), VVo;
-//        Eigen::VectorXi _1, _2;
-//        for(int i=0;i<mesh.tet_vertices.size();i++){
-//            VV.row(i) = mesh.tet_vertices[i].pos;
-//        }
-//        igl::unique_rows(VV, VVo, _1, _2);
-//        cout<<VV.rows()<<" "<<VVo.rows()<<endl;
-//        cout<<T->nb_vertices()<<endl;
-//        cout<<mesh.tet_vertices.size()<<endl;
-//
-//        cout<<"T->nb_finite_cells() = "<<T->nb_finite_cells()<<endl;
-//        cout<<"T->nb_cells() = "<<T->nb_cells()<<endl;
-//        for (int i=0;i< mesh.tets.size();i++) {
-//            auto &t = mesh.tets[i];
-//            if (-GEO::PCK::orient_3d(mesh.tet_vertices[t[0]].pos.data(), mesh.tet_vertices[t[1]].pos.data(),
-//                                     mesh.tet_vertices[t[2]].pos.data(), mesh.tet_vertices[t[3]].pos.data()) <= 0) {
-//                cout << "inverted found!!!! 1" << endl;
-//                cout<<i<<endl;
-//            }
-//        }
-//        for (int i=0;i< mesh.tets.size();i++) {
-//            auto &t = mesh.tets[i];
-//            if (orient3d(mesh.tet_vertices[t[0]].pos.data(), mesh.tet_vertices[t[1]].pos.data(),
-//                         mesh.tet_vertices[t[2]].pos.data(), mesh.tet_vertices[t[3]].pos.data()) <= 0) {
-//                cout << "inverted found!!!! 2" << endl;
-//                cout<<i<<endl;
-//            }
-//        }
-//        for (int i=0;i< mesh.tets.size();i++) {
-//            auto &t = mesh.tets[i];
-//            if (is_inverted(mesh.tet_vertices[t[0]].pos, mesh.tet_vertices[t[1]].pos,
-//                         mesh.tet_vertices[t[2]].pos, mesh.tet_vertices[t[3]].pos)) {
-//                cout << "inverted found!!!! 3" << endl;
-//                cout<<i<<endl;
-//                t.print();
-//
-//                cout<<std::setprecision(17)<<tet_vertices[t[0]].pos.transpose()<<endl;
-//                cout<<tet_vertices[t[1]].pos.transpose()<<endl;
-//                cout<<tet_vertices[t[2]].pos.transpose()<<endl;
-//                cout<<tet_vertices[t[3]].pos.transpose()<<endl;
-//
-//                cout<<(tet_vertices[t[0]].pos[0] == tet_vertices[t[1]].pos[0])<<endl;
-//                cout<<(tet_vertices[t[1]].pos[0] == tet_vertices[t[2]].pos[0])<<endl;
-//                cout<<(tet_vertices[t[2]].pos[0] == tet_vertices[t[3]].pos[0])<<endl;
-//
-//                cout<<(tet_vertices[t[0]].pos[1] == tet_vertices[t[3]].pos[1])<<endl;
-//                cout<<(tet_vertices[t[1]].pos[1] == tet_vertices[t[2]].pos[1])<<endl;
-//
-//                cout<<(tet_vertices[t[0]].pos[2] == tet_vertices[t[2]].pos[2])<<endl;
-//                cout<<(tet_vertices[t[1]].pos[2] == tet_vertices[t[3]].pos[2])<<endl;
-//            }
-//        }
-//        pausee();
-//        //fortest
 
-//        //set opp_t_ids
-//        for(int t_id = 0;t_id<mesh.tets.size();t_id++) {
-//            auto &t = mesh.tets[t_id];
-//            for (int j = 0; j < 4; j++) {
-//                if (t.opp_t_ids[j] >= 0)
-//                    continue;
-//                std::vector<int> pair;
-//                set_intersection(tet_vertices[t[(j + 1) % 4]].conn_tets,
-//                                 tet_vertices[t[(j + 2) % 4]].conn_tets,
-//                                 tet_vertices[t[(j + 3) % 4]].conn_tets, pair);
-//                if (pair.size() == 2) {
-//                    int opp_t_id = pair[0] == t_id ? pair[1] : pair[0];
-//                    t.opp_t_ids[j] = opp_t_id;
-//                    auto &opp_t = mesh.tets[opp_t_id];
-//                    for (int k = 0; k < 4; k++) {
-//                        if (opp_t[k] != t[(j + 1) % 4] && opp_t[k] != t[(j + 2) % 4] && opp_t[k] != t[(j + 3) % 4])
-//                            opp_t.opp_t_ids[k] = t_id;
-//                    }
-//                }
-//            }
-//        }
 
         //match faces: should be integer with sign
         //match bbox 8 facets: should be -1 and 0~5

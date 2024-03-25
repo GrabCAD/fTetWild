@@ -1086,7 +1086,7 @@ bool floatTetWild::is_energy_unstable(const std::array<Scalar, 12>& T, Scalar re
                                                           {{3, 1, 2, 0}},
                                                           {{3, 2, 0, 1}},
                                                           {{3, 2, 1, 0}}};
-    Scalar res0;
+    Scalar res0 = 0.0;
     if (std::isinf(res))
         return true;
 
