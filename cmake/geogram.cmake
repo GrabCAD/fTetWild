@@ -8,7 +8,8 @@ endif()
 
 ################################################################################
 
-set(GEOGRAM_SEARCH_PATHS ${FLOAT_TETWILD_EXTERNAL}/geogram)
+#set(GEOGRAM_SEARCH_PATHS ${FLOAT_TETWILD_EXTERNAL}/geogram)
+set(GEOGRAM_SEARCH_PATHS ${CMAKE_CURRENT_SOURCE_DIR}/src/external/geogram)
 
 find_path(GEOGRAM_SOURCE_INCLUDE_DIR
 		geogram/basic/common.h
@@ -20,6 +21,8 @@ find_path(GEOGRAM_SOURCE_INCLUDE_DIR
 set(GEOGRAM_ROOT ${GEOGRAM_SOURCE_INCLUDE_DIR}/../..)
 
 message(STATUS "Found Geogram here: ${GEOGRAM_ROOT}")
+message(STATUS "hi mom")
+message(STATUS "here: ${GEOGRAM_SEARCH_PATHS}")
 
 ################################################################################
 

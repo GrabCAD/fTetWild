@@ -17,7 +17,6 @@
 #include <floattetwild/intersections.h>
 #include <floattetwild/Logger.hpp>
 
-#include <igl/Timer.h>
 
 double time_cut_mesh11 = 0;
 double time_cut_mesh12 = 0;
@@ -27,7 +26,7 @@ double time_get_intersecting_edges_and_points1 = 0;
 double time_get_intersecting_edges_and_points2 = 0;
 double time_get_intersecting_edges_and_points3 = 0;
 double time_get_intersecting_edges_and_points4 = 0;
-//igl::Timer timer;
+
 
 void floatTetWild::print_times1(){
 //    logger().debug("\t\t\t- time_cut_mesh11 = {}s", time_cut_mesh11);

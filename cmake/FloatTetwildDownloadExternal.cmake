@@ -32,14 +32,6 @@ function(float_tetwild_download_libigl)
     )
 endfunction()
 
-## Json
-function(float_tetwild_download_json)
-    float_tetwild_download_project(json
-        GIT_REPOSITORY https://github.com/jdumas/json
-        GIT_TAG        0901d33bf6e7dfe6f70fd9d142c8f5c6695c6c5b
-    )
-endfunction()
-
 ## Catch2
 function(float_tetwild_download_catch2)
     float_tetwild_download_project(Catch2
@@ -85,16 +77,6 @@ function(float_tetwild_download_spdlog)
     float_tetwild_download_project(spdlog
         URL         https://github.com/gabime/spdlog/archive/v1.3.1.tar.gz
         URL_MD5     3c17dd6983de2a66eca8b5a0b213d29f
-    )
-endfunction()
-
-## Geogram LGPL
-function(float_tetwild_download_geogram)
-    float_tetwild_download_project(geogram
-#        GIT_REPOSITORY   https://github.com/polyfem/geogram.git
-#        GIT_TAG          e6b9612f1146370e40deaa341b4dd7ef90502102
-            GIT_REPOSITORY https://github.com/Yixin-Hu/geogram
-            GIT_TAG        b613750341a6cdd31ae8df80ecfc26ac7ca1a6ad
     )
 endfunction()
 

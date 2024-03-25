@@ -162,7 +162,8 @@ int tetrahedralization(GEO::Mesh&       sf_mesh,
             }
         }
     } else {
-        boolean_operation(mesh, boolean_op);
+        std::cout << "Error: boolean ops desupported.\n";
+        return 0;
     }
     stats().record(StateInfo::wn_id,
                    timer.getElapsedTimeInSec(),

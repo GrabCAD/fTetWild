@@ -133,11 +133,6 @@ target_link_libraries(${PROJECT_NAME}
 		geogram::geogram
 		spdlog::spdlog
 		Threads::Threads
-#		fast_winding_number
-		json
-#Removed by Ben S.
-#		${GMP_LIBRARIES}
-		# ${MPFR_LIBRARIES}
 )
 if(FLOAT_TETWILD_ENABLE_TBB)
 	target_link_libraries(${PROJECT_NAME} PUBLIC tbb::tbb)

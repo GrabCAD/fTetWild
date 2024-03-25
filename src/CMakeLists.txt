@@ -6,9 +6,6 @@ set(SOURCES
 	auto_table.hpp
 	auto_table.cpp
 
-	CSGTreeParser.hpp
-	CSGTreeParser.cpp
-
 	LocalOperations.h
 	LocalOperations.cpp
 	EdgeSplitting.h
