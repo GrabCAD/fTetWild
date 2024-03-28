@@ -32,7 +32,15 @@ using namespace floatTetWild;
 using namespace Eigen;
 
 
-//As of this writing, fTetWildRun is deterministic (same output with same input) if max_threads = 1.
+/* As of this writing, fTetWildRun is deterministic (same output with same input) if max_threads = 1.
+Todo:
+    Suppress Geogram's printing, wtf.
+    Try lightening Geogram - it builds a lot of unnecessary stuff.
+    See if you can make it deterministic with more than one thread.
+    Enable float (vs double). Others have done it.
+    Rmv PoissonRecon from Geogram.
+
+*/
 
 
 //Only after writing this I realized FloatTetwild.cpp is basically a copy of this.
@@ -49,7 +57,7 @@ std::pair<Eigen::MatrixXf, Eigen::Matrix4Xi> fTetWildRun(const Eigen::MatrixXf &
 
     Mesh        mesh;
     Parameters& params = mesh.params;
-Quiet=true;
+
     if(Quiet){
         params.log_level = 6;
         params.is_quiet = true;

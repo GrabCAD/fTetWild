@@ -3104,7 +3104,7 @@ namespace GEO {
 
     
     /************************************************************************/
-
+#ifdef GEO_WITH_ZLIB
     /**
      * \brief IO handler for the geogram native file format.
      */
@@ -3729,6 +3729,7 @@ namespace GEO {
             return false;
         }
     };
+#endif
 
     /************************************************************************/
    
@@ -4886,16 +4887,18 @@ namespace GEO {
         geo_register_MeshIOHandler_creator(TETIOHandler,  "tet");
         geo_register_MeshIOHandler_creator(TET6IOHandler, "tet6");
         geo_register_MeshIOHandler_creator(TET8IOHandler, "tet8");	
+#ifdef GEO_WITH_ZLIB
         geo_register_MeshIOHandler_creator(GeogramIOHandler, "geogram");
         geo_register_MeshIOHandler_creator(GeogramIOHandler, "geogram_ascii");
         geo_register_MeshIOHandler_creator(GraphiteIOHandler, "graphite");
+#endif
         geo_register_MeshIOHandler_creator(PDBIOHandler, "pdb");
         geo_register_MeshIOHandler_creator(PDBIOHandler, "pdb1");
         geo_register_MeshIOHandler_creator(OVMIOHandler, "ovm");
         geo_register_MeshIOHandler_creator(MSHIOHandler, "msh");	
     }
 
-    
+#ifdef GEO_WITH_ZLIB
     bool GEOGRAM_API mesh_load(
         InputGeoFile& geofile, Mesh& M,
         const MeshIOFlags& ioflags 
@@ -4911,5 +4914,5 @@ namespace GEO {
         GeogramIOHandler geogram;
         return geogram.save(M, geofile, ioflags);
     }
-    
+#endif
 }

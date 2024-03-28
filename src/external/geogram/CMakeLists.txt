@@ -132,12 +132,7 @@ if(NOT GEOGRAM_LIB_ONLY)
   add_subdirectory(tests)
 endif()
 
-add_subdirectory(doc)
 
-##############################################################################
-# Cleanup from previous builds
-
-file(REMOVE ${CMAKE_BINARY_DIR}/doc/LICENSE.txt)
 
 
 ##############################################################################
@@ -187,26 +182,6 @@ endif()
 # Enable component-based packaging for archive generators (TGZ, ZIP)
 set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
 
-set(CPACK_COMPONENTS_ALL runtime devkit devkit-full doc-devkit doc-devkit-full)
-set(CPACK_COMPONENTS_GROUPING "IGNORE")
-
-set(CPACK_COMPONENT_RUNTIME_DISPLAY_NAME "Vorpaline Application")
-set(CPACK_COMPONENT_RUNTIME_GROUP "Runtime")
-
-set(CPACK_COMPONENT_DEVKIT_DISPLAY_NAME "Vorpaline Developer Kit")
-set(CPACK_COMPONENT_DEVKIT_GROUP "Development")
-
-set(CPACK_COMPONENT_DEVKIT-FULL_DISPLAY_NAME "Vorpaline Full Developer Kit")
-set(CPACK_COMPONENT_DEVKIT-FULL_GROUP "Development")
-
-set(CPACK_COMPONENT_DOC-DEVKIT_DISPLAY_NAME "Vorpaline API Developer Kit Documentation")
-set(CPACK_COMPONENT_DOC-DEVKIT_GROUP "Documentation")
-
-set(CPACK_COMPONENT_DOC-DEVKIT-FULL_DISPLAY_NAME "Vorpaline Full Developer Kit Documentation")
-set(CPACK_COMPONENT_DOC-DEVKIT-FULL_GROUP "Documentation")
-
-set(CPACK_COMPONENT_DOC-DEVKIT-INTERNAL_DISPLAY_NAME "Vorpaline Internal Developer Kit Documentation")
-set(CPACK_COMPONENT_DOC-DEVKIT-INTERNAL_GROUP "Documentation")
 
 # Copy the helper script to build individual packages to the binary directory
 configure_file(

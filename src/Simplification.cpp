@@ -10,6 +10,8 @@
 #include <floattetwild/Logger.hpp>
 #include <floattetwild/LocalOperations.h>
 
+#include <iomanip>
+
 #include <igl/remove_duplicate_vertices.h>
 #include <igl/writeOFF.h>
 #include <igl/Timer.h>

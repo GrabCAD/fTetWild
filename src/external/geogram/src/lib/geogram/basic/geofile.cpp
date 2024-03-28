@@ -48,6 +48,9 @@
 #include <geogram/basic/logger.h>
 #include <ctype.h>
 
+
+#ifdef GEO_WITH_ZLIB
+
 /* Using portable printf modifier for 64 bit ints from pstdint.h */
 #include <geogram/third_party/pstdint.h>  
 #define INT64_T_FMT "%" PRINTF_INT64_MODIFIER "d"
@@ -105,31 +108,7 @@ namespace GEO {
     
     /**************************************************************/
 
-    std::map<std::string, GeoFile::AsciiAttributeSerializer>
-       GeoFile::ascii_attribute_read_;
-
-    std::map<std::string, GeoFile::AsciiAttributeSerializer>
-       GeoFile::ascii_attribute_write_;
-
-    void GeoFile::register_ascii_attribute_serializer(
-        const std::string& type_name,
-        AsciiAttributeSerializer read,
-        AsciiAttributeSerializer write
-    ) {
-        geo_assert(
-            ascii_attribute_read_.find(type_name) ==
-            ascii_attribute_read_.end()
-        );
-        ascii_attribute_read_[type_name] = read;
-        geo_assert(
-            ascii_attribute_write_.find(type_name) ==
-            ascii_attribute_write_.end()
-        );
-        ascii_attribute_write_[type_name] = write;
-    }
-
-    
-    
+   
     
     /**************************************************************/
     
@@ -781,3 +760,38 @@ namespace GEO {
     /**************************************************************/    
 }
 
+#endif
+
+
+namespace GEO {
+    
+    /**************************************************************/
+
+    GeoFileException::~GeoFileException() GEO_NOEXCEPT {
+    }
+    
+    /**************************************************************/
+
+    std::map<std::string, GeoFile::AsciiAttributeSerializer>
+       GeoFile::ascii_attribute_read_;
+
+    std::map<std::string, GeoFile::AsciiAttributeSerializer>
+       GeoFile::ascii_attribute_write_;
+
+    void GeoFile::register_ascii_attribute_serializer(
+        const std::string& type_name,
+        AsciiAttributeSerializer read,
+        AsciiAttributeSerializer write
+    ) {
+        geo_assert(
+            ascii_attribute_read_.find(type_name) ==
+            ascii_attribute_read_.end()
+        );
+        ascii_attribute_read_[type_name] = read;
+        geo_assert(
+            ascii_attribute_write_.find(type_name) ==
+            ascii_attribute_write_.end()
+        );
+        ascii_attribute_write_[type_name] = write;
+    }
+}

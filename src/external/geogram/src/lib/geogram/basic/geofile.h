@@ -43,18 +43,23 @@
  *
  */
 
-#ifndef GEOGRAM_BASIC_GEOFILE
-#define GEOGRAM_BASIC_GEOFILE
-
 #include <geogram/basic/common.h>
 #include <geogram/basic/numeric.h>
 #include <geogram/basic/memory.h>
 #include <geogram/basic/string.h>
-#include <geogram/third_party/zlib/zlib.h>
 
 #include <stdexcept>
 #include <fstream>
 #include <map>
+
+
+#ifndef GEOGRAM_BASIC_GEOFILE
+#define GEOGRAM_BASIC_GEOFILE
+
+#ifdef GEO_WITH_ZLIB
+#include <geogram/third_party/zlib/zlib.h>
+#endif
+
 
 
 /**
@@ -646,7 +651,11 @@ namespace GEO {
         
     protected:
         std::string filename_;
+
+#ifdef GEO_WITH_ZLIB
         gzFile file_;
+#endif
+
         bool ascii_;
         FILE* ascii_file_;
         std::string current_chunk_class_;
