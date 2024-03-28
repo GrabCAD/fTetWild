@@ -47,7 +47,11 @@
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_AABB.h>
+
+#ifdef GEO_WITH_IMAGE
 #include <geogram/image/image_rasterizer.h>
+
+
 #include <geogram/points/kd_tree.h>
 
 namespace {
@@ -374,4 +378,4 @@ namespace GEO {
 }
 
 
-
+#endif
