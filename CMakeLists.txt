@@ -121,9 +121,7 @@ if(FLOAT_TETWILD_USE_FLOAT)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC -DFLOAT_TETWILD_USE_FLOAT)
 endif()
 
-#Changed by Ben S.
-#target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${GMP_INCLUDE_DIRS})
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC 3rdparty/libxprec/include/xprec/)
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC src/external/libxprec/include/xprec/)
 
 
 target_link_libraries(${PROJECT_NAME}
