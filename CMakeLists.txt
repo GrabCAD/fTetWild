@@ -3,19 +3,6 @@ cmake_minimum_required(VERSION 3.8)
 project(FloatTetwild)
 ################################################################################
 
-#Make everything /MT
-if(MSVC)
-	foreach(config ${CMAKE_CONFIGURATION_TYPES})
-		string(TOUPPER ${config} config)
-		string(REPLACE /MD /MT CMAKE_C_FLAGS_${config} "${CMAKE_C_FLAGS_${config}}")
-		string(REPLACE /MD /MT CMAKE_CXX_FLAGS_${config} "${CMAKE_CXX_FLAGS_${config}}")
-	endforeach()
-
-	set(IGL_STATIC_RUNTIME ON)
-endif()
-
-
-
 # Detects whether this is a top-level project
 get_directory_property(HAS_PARENT PARENT_DIRECTORY)
 if(HAS_PARENT)
@@ -65,7 +52,7 @@ option(SANITIZE_THREAD    "Sanitize Thread"        OFF)
 option(SANITIZE_UNDEFINED "Sanitize Undefined"     OFF)
 
 # Options for libigl modules
-option(LIBIGL_USE_STATIC_LIBRARY     "Use libigl as static library" OFF)
+option(LIBIGL_USE_STATIC_LIBRARY          "Use libigl as static library" OFF)
 option(LIBIGL_WITH_COMISO            "Use CoMiso"                   OFF)
 option(LIBIGL_WITH_EMBREE            "Use Embree"                   OFF)
 option(LIBIGL_WITH_OPENGL            "Use OpenGL"                   OFF)
@@ -89,6 +76,15 @@ include(FloatTetwildDependencies)
 # FloatTetwild library
 ################################################################################
 
+find_package(GMPfTetWild)
+IF(NOT ${GMP_FOUND})
+	MESSAGE(FATAL_ERROR "Cannot find GMP")
+ENDIF()
+
+# find_package(MPFR)
+# IF(NOT ${MPFR_FOUND})
+# 	MESSAGE(FATAL_ERROR "Cannot find MPFR")
+# ENDIF()
 
 # add_library() can only be called without any source since CMake 3.11 ...
 add_library(${PROJECT_NAME} src/Logger.cpp src/external/WindingNumber.h)
@@ -121,10 +117,7 @@ if(FLOAT_TETWILD_USE_FLOAT)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC -DFLOAT_TETWILD_USE_FLOAT)
 endif()
 
-#Changed by Ben S.
-#target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${GMP_INCLUDE_DIRS})
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC 3rdparty/libxprec/include/xprec/)
-
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${GMP_INCLUDE_DIRS})
 
 target_link_libraries(${PROJECT_NAME}
 	PUBLIC
@@ -133,6 +126,10 @@ target_link_libraries(${PROJECT_NAME}
 		geogram::geogram
 		spdlog::spdlog
 		Threads::Threads
+#		fast_winding_number
+		json
+		${GMP_LIBRARIES}
+		# ${MPFR_LIBRARIES}
 )
 if(FLOAT_TETWILD_ENABLE_TBB)
 	target_link_libraries(${PROJECT_NAME} PUBLIC tbb::tbb)
@@ -143,7 +140,6 @@ if(FLOAT_TETWILD_WITH_EXACT_ENVELOPE)
 	target_link_libraries(${PROJECT_NAME} PUBLIC FastEnvelope)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC NEW_ENVELOPE)
 endif()
-
 
 
 ################################################################################
@@ -180,8 +176,13 @@ endif()
 # Subdirectories
 ################################################################################
 
-
-
 # Other sources
 add_subdirectory(src)
 
+# Compile extras only if this is a top-level project
+if(FLOAT_TETWILD_TOPLEVEL_PROJECT)
+	# Unit tests
+	include(CTest)
+	enable_testing()
+	add_subdirectory(tests)
+endif()

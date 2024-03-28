@@ -27,8 +27,7 @@ if(FLOAT_TETWILD_WITH_EXACT_ENVELOPE )
 #		FastWindingNumber.hpp
 #		FastWindingNumber.cpp
 
-# Removed by Ben S.
-#		Rational.h
+		Rational.h
 	)
 else()
 	set(SOURCES

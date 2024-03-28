@@ -17,8 +17,7 @@
 #include <floattetwild/AABBWrapper.h>
 #include <floattetwild/CutMesh.h>
 
-//Removed by Ben S.
-//#include <floattetwild/Rational.h>
+#include <floattetwild/Rational.h>
 namespace floatTetWild {
     void match_surface_fs(const Mesh &mesh,
                           const std::vector<Vector3> &input_vertices, const std::vector<Vector3i> &input_faces,
@@ -46,8 +45,8 @@ namespace floatTetWild {
                        std::vector<std::array<std::vector<int>, 4>> &new_track_surface_fs,
                        std::vector<int> &modified_t_ids, bool is_again);
 
-    void simplify_subdivision_result(int insert_f_id, int input_v_size, Mesh &mesh, const AABBWrapper &tree,
-                                     const std::vector<std::array<std::vector<int>, 4>> &track_surface_fs);
+    void simplify_subdivision_result(int insert_f_id, int input_v_size, Mesh &mesh, AABBWrapper &tree,
+                                     std::vector<std::array<std::vector<int>, 4>> &track_surface_fs);
 
     ///face
     bool insert_multi_triangles(int f_id, const std::vector<Vector3> &input_vertices,
@@ -60,7 +59,7 @@ namespace floatTetWild {
     bool insert_one_triangle(int f_id, const std::vector<Vector3> &input_vertices,
                              const std::vector<Vector3i> &input_faces, const std::vector<int> &input_tags,
                              Mesh &mesh, std::vector<std::array<std::vector<int>, 4>> &track_surface_fs,
-                             const AABBWrapper &tree, bool is_again);
+                             AABBWrapper &tree, bool is_again);
 
     void
     find_cutting_tets(int f_id, const std::vector<Vector3> &input_vertices, const std::vector<Vector3i> &input_faces,
@@ -123,11 +122,10 @@ namespace floatTetWild {
                                 const std::vector<int> &sorted_f_ids);
     Vector3 get_normal(const Vector3& a, const Vector3& b, const Vector3& c);
 
-//Removed by Ben S.
     //fortest
-//    typedef Eigen::Matrix<triwild::Rational, 3, 1> Vector3_r;
+    typedef Eigen::Matrix<triwild::Rational, 3, 1> Vector3_r;
 
-//    int orient_rational(const Vector3_r &p1, const Vector3_r &p2, const Vector3_r &p3, const Vector3_r &p);
+    int orient_rational(const Vector3_r &p1, const Vector3_r &p2, const Vector3_r &p3, const Vector3_r &p);
 }
 
 

@@ -39,11 +39,6 @@ if(NOT TARGET spdlog::spdlog)
 	target_compile_definitions(spdlog INTERFACE SPDLOG_FMT_EXTERNAL)
 endif()
 
-# Geogram
-if(NOT TARGET geogram::geogram)
-	include(geogram)
-endif()
-
 # Libigl
 if(NOT TARGET igl::core)
 	float_tetwild_download_libigl()
@@ -51,6 +46,12 @@ if(NOT TARGET igl::core)
 	# Import libigl targets
 	list(APPEND CMAKE_MODULE_PATH "${FLOAT_TETWILD_EXTERNAL}/libigl/cmake")
 	include(libigl)
+endif()
+
+# Geogram
+if(NOT TARGET geogram::geogram)
+	float_tetwild_download_geogram()
+	include(geogram)
 endif()
 
 
@@ -81,6 +82,13 @@ endif()
 # C++11 threads
 find_package(Threads REQUIRED)
 
+
+# Json
+if(NOT TARGET json)
+	float_tetwild_download_json()
+	add_library(json INTERFACE)
+	target_include_directories(json SYSTEM INTERFACE ${FLOAT_TETWILD_EXTERNAL}/json/include)
+endif()
 
 
 

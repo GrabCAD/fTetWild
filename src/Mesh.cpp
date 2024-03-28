@@ -116,9 +116,7 @@ namespace floatTetWild {
 		// std::sort(indices.begin(), indices.end(), [&](const int i, const int j){ return weights[i] < weights[j]; });
 		std::vector<int> indices(edges.size());
 		std::iota(std::begin(indices), std::end(indices), 0);
-
-		std::mt19937 rng;
-		std::shuffle(indices.begin(), indices.end(), rng);
+		floatTetWild::Random::shuffle(indices);
 
 		std::vector<bool> unsafe_face(f_is_removed.size(), false);
 		safe_set.clear();
@@ -178,6 +176,81 @@ namespace floatTetWild {
 			}
 		}
 	}
+
+
+	// void Mesh::one_ring_edge_set(const std::vector<std::array<int, 2>> &edges, std::vector<int> &safe_set) const
+	// {
+	// 	// std::vector<int> indices(edges.size());
+	// 	// std::vector<Scalar> weights(edges.size());
+
+	// 	// for(size_t e_id = 0; e_id < edges.size(); ++e_id)
+	// 	// {
+	// 	// 	indices[e_id] = e_id;
+	// 	// 	weights[e_id] = (tet_vertices[edges[e_id][0]].pos - tet_vertices[edges[e_id][1]].pos).squaredNorm();
+	// 	// }
+	// 	// std::sort(indices.begin(), indices.end(), [&](const int i, const int j){ return weights[i] < weights[j]; });
+
+	// 	std::vector<int> indices(edges.size());
+	// 	std::iota(std::begin(indices), std::end(indices), 0);
+	// 	std::random_shuffle(indices.begin(), indices.end());
+
+	// 	std::vector<bool> unsafe_tets(tets.size(), false);
+	// 	safe_set.clear();
+	// 	for(const int e_id : indices)
+	// 	{
+	// 		const auto &e = edges[e_id];
+	// 		if(tet_vertices[e[0]].is_removed || tet_vertices[e[1]].is_removed)
+	// 			continue;
+
+	// 		bool ok = true;
+
+	// 		for(const auto &t : tet_vertices[e[0]].conn_tets)
+	// 		{
+	// 			if(tets[t].is_removed)
+	// 				continue;
+
+	// 			if(unsafe_tets[t])
+	// 			{
+	// 				ok=false;
+	// 				break;
+	// 			}
+	// 		}
+	// 		if(!ok)
+	// 			continue;
+	// 		for(const auto &t : tet_vertices[e[1]].conn_tets)
+	// 		{
+	// 			if(tets[t].is_removed)
+	// 				continue;
+
+	// 			if(unsafe_tets[t])
+	// 			{
+	// 				ok=false;
+	// 				break;
+	// 			}
+	// 		}
+	// 		if(!ok)
+	// 			continue;
+
+	// 		safe_set.push_back(e_id);
+
+	// 		for(const auto &t : tet_vertices[e[0]].conn_tets)
+	// 		{
+	// 			if(tets[t].is_removed)
+	// 				continue;
+
+	// 			assert(!unsafe_tets[t]);
+	// 			unsafe_tets[t]=true;
+	// 		}
+	// 		for(const auto &t : tet_vertices[e[1]].conn_tets)
+	// 		{
+	// 			if(tets[t].is_removed)
+	// 				continue;
+
+	// 			// assert(!unsafe_tets[t]);
+	// 			unsafe_tets[t]=true;
+	// 		}
+	// 	}
+	// }
 
 	void Mesh::partition(const int n_parts, std::vector<std::vector<int>> &tets_id) const
 	{

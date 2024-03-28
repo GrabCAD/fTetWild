@@ -6,6 +6,9 @@ set(SOURCES
 	auto_table.hpp
 	auto_table.cpp
 
+	CSGTreeParser.hpp
+	CSGTreeParser.cpp
+
 	LocalOperations.h
 	LocalOperations.cpp
 	EdgeSplitting.h
@@ -52,9 +55,6 @@ set(SOURCES
 	Types.hpp
 
 	Statistics.h
-	
-	fTetWildRun.cpp
-	fTetWildRun.h
 )
 
 prepend_current_path(SOURCES)

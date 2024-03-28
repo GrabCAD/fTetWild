@@ -10,8 +10,6 @@
 #include <floattetwild/Logger.hpp>
 #include <floattetwild/LocalOperations.h>
 
-#include <iomanip>
-
 #include <igl/remove_duplicate_vertices.h>
 #include <igl/writeOFF.h>
 #include <igl/Timer.h>
@@ -41,8 +39,14 @@ void floatTetWild::simplify(std::vector<Vector3>& input_vertices, std::vector<Ve
             conn_fs[input_faces[i][j]].insert(i);
     }
 
+    igl::Timer timer;
+    timer.start();
     collapsing(input_vertices, input_faces, tree, params, v_is_removed, f_is_removed, conn_fs);
+    std::cout<<"collapsing "<<timer.getElapsedTime()<<std::endl;
+
+    timer.start();
     swapping(input_vertices, input_faces, tree, params, v_is_removed, f_is_removed, conn_fs);
+    std::cout<<"swapping "<<timer.getElapsedTime()<<std::endl;
 
     //clean up vs, fs
     //v

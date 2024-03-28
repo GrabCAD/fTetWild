@@ -150,6 +150,9 @@ void edge_collapsing_aux(Mesh& mesh, const AABBWrapper& tree, std::vector<std::a
             counter++;
         }
 
+        cout << "success(env) = " << suc_counter_env << endl;
+        cout << "success = " << suc_counter << "(" << counter << ")" << endl;
+
 #if EC_POSTPROCESS
         if (suc_counter == 0)
 #endif
