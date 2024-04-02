@@ -21,7 +21,6 @@ find_path(GEOGRAM_SOURCE_INCLUDE_DIR
 set(GEOGRAM_ROOT ${GEOGRAM_SOURCE_INCLUDE_DIR}/../..)
 
 message(STATUS "Found Geogram here: ${GEOGRAM_ROOT}")
-message(STATUS "hi mom")
 message(STATUS "here: ${GEOGRAM_SEARCH_PATHS}")
 
 ################################################################################

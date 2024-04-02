@@ -91,7 +91,7 @@ std::pair<Eigen::MatrixXf, Eigen::Matrix4Xi> fTetWildRun(const Eigen::MatrixXf &
     }
 
     /// set input tage
-    std::vector<Vector3>  input_vertices(Vertices.cols());
+    std::vector<floatTetWild::Vector3>  input_vertices(Vertices.cols());
     std::vector<Vector3i> input_faces   (   Faces.cols());
     std::vector<int>      input_tags;
 
