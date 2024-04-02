@@ -182,7 +182,17 @@ std::pair<Eigen::MatrixXf, Eigen::Matrix4Xi> fTetWildRun(const Eigen::MatrixXf &
 
     if(!OutputName.empty()){
         //Write tetrahedral mesh.
-        MeshIO::write_mesh(OutputName + ".msh", mesh, false);
+        std::vector<Scalar> colors;
+
+        colors.resize(mesh.tets.size(), -1);
+        for (int i = 0; i < mesh.tets.size(); i++) {
+            if (mesh.tets[i].is_removed)
+                continue;
+            colors[i] = mesh.tets[i].quality;
+        }
+
+        MeshIO::write_mesh(OutputName + ".msh", mesh, false, colors);
+
 
         //This computes/writes boundary surface of tetrahedral mesh
         Eigen::MatrixXd V_sf;
@@ -196,34 +206,55 @@ std::pair<Eigen::MatrixXf, Eigen::Matrix4Xi> fTetWildRun(const Eigen::MatrixXf &
     }
 
 
-    //Convert to more primitive data.
+    //Convert to more primitive data. It's a bit confounded by the presense of vertices and tetrahedra that are to be removed,
+    //see write_mesh_aux in MeshIO.cpp for how that's originally done. Start by counting and allocating.
+    size_t NV = 0;
+    size_t NT = 0;
+
+    for(const auto &v : mesh.tet_vertices)
+        if(!v.is_removed)
+            NV++;
+
+    for(const auto &t : mesh.tets)
+        if(!t.is_removed)
+            NT++;
+
     MatrixXf TV;
     Matrix4Xi TF;
 
-    TV.resize(3, mesh.tet_vertices.size());
-    TF.resize(NoChange, mesh.tets.size());
+    TV.resize(3, NV);
+    TF.resize(NoChange, NT);
 
-    for(size_t i = 0; i != mesh.tet_vertices.size(); i++){
-        const auto &v = mesh.tet_vertices[i];
-        auto p = TV.col(i).data();
 
-        p[0] = (float)v[0];
-        p[1] = (float)v[1];
-        p[2] = (float)v[2];
-    }
+    //Now add. Note index changes for vertices.
+    std::vector<size_t> IndexTransform;
+    NV = 0;
 
-    for(size_t i = 0; i != mesh.tets.size(); i++){
-        const auto &t = mesh.tets[i];
-        auto p = TF.col(i).data();
+    for(const auto &v : mesh.tet_vertices)
+        if(!v.is_removed){
+            auto p = TV.col(NV).data();
 
-        p[0] = t[0];
-        p[1] = t[1];
-        p[2] = t[2];
-        p[3] = t[3];
-    }
+            p[0] = (float)v[0];
+            p[1] = (float)v[1];
+            p[2] = (float)v[2];
+
+            IndexTransform.push_back(NV++);
+        }else
+            IndexTransform.push_back(SIZE_MAX);
+
+    NT = 0;
+
+    for(const auto &t : mesh.tets)
+        if(!t.is_removed){
+            auto p = TF.col(NT++).data();
+
+            p[0] = IndexTransform[t[0]];
+            p[1] = IndexTransform[t[1]];
+            p[2] = IndexTransform[t[3]];
+            p[3] = IndexTransform[t[2]];
+        }
 
 
     return std::make_pair(TV, TF);
 }
-
 

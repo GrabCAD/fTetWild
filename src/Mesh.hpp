@@ -190,7 +190,7 @@ namespace floatTetWild {
         }
 
         inline void reset_t_empty_start() {
-            t_empty_start = tets.size();
+            t_empty_start = (int)tets.size();
             for (int i = 0; i < tets.size(); i++) {
                 if (tets[i].is_removed) {
                     t_empty_start = i;
@@ -200,7 +200,7 @@ namespace floatTetWild {
         }
 
         inline void reset_v_empty_start() {
-            v_empty_start = tet_vertices.size();
+            v_empty_start = (int)tet_vertices.size();
             for (int i = 0; i < tet_vertices.size(); i++) {
                 if (tet_vertices[i].is_removed) {
                     v_empty_start = i;
