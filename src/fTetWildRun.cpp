@@ -34,11 +34,15 @@ using namespace Eigen;
 
 /* As of this writing, fTetWildRun is deterministic (same output with same input) if max_threads = 1.
 Todo:
-    Suppress Geogram's printing, wtf.
-    Try lightening Geogram - it builds a lot of unnecessary stuff.
     See if you can make it deterministic with more than one thread.
     Enable float (vs double). Others have done it.
-    Rmv PoissonRecon from Geogram.
+
+Other forks of interest:
+
+	https://github.com/Mathias-Fuchs/fTetWild
+	https://github.com/seeeagull/fTetWild/tree/master
+
+There's a build option - float vs double. Any disadvantage to float, other than it doesn't freaking work?
 
 */
 
