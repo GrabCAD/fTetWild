@@ -65,7 +65,7 @@ std::pair<Eigen::MatrixXf, Eigen::Matrix4Xi> fTetWildRun(const Eigen::MatrixXf &
     if(Quiet){
         params.log_level = 6;
         params.is_quiet = true;
-        spdlog::set_level(spdlog::level::off);
+        logger().set_level(spdlog::level::off);
     }
 
     params.ideal_edge_length_rel = ideal_edge_length_rel;
