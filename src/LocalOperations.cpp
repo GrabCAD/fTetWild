@@ -1391,7 +1391,7 @@ void floatTetWild::AMIPS_hessian(const std::array<Scalar, 12>& T, Matrix3& resul
     Scalar helper_84 = helper_66*helper_82;
     Scalar helper_85 = -helper_32 - helper_48 + helper_53;
     Scalar helper_86 = 1.0/helper_85;
-    Scalar helper_87 = helper_86*pow(pow(helper_85, 2), -0.333333333333333);
+    Scalar helper_87 = helper_86*pow(pow((Scalar)helper_85, 2), -0.333333333333333);
     Scalar helper_88 = 0.707106781186548*helper_6;
     Scalar helper_89 = 0.707106781186548*helper_27;
     Scalar helper_90 = helper_88 - helper_89;
@@ -1424,13 +1424,13 @@ void floatTetWild::AMIPS_hessian(const std::array<Scalar, 12>& T, Matrix3& resul
     Scalar helper_117 = -helper_100 + helper_101 - helper_50 + helper_51;
     Scalar helper_118 = -helper_102*helper_110 + helper_107*helper_92 + helper_108*helper_91;
     Scalar helper_119 = helper_82*helper_86*(helper_112*(-helper_58 + helper_59) - helper_113*helper_93 - helper_114*helper_98 + helper_115*helper_95);
-    result_0(0, 0) = helper_56*(helper_57*helper_64*helper_65 - pow(helper_64, 2)*helper_83 + 0.666666666666667*helper_64*helper_84*(-helper_41 + helper_46 - helper_61 + helper_63) + 3.0);
+    result_0(0, 0) = helper_56*(helper_57*helper_64*helper_65 - pow((Scalar)helper_64, 2)*helper_83 + 0.666666666666667*helper_64*helper_84*(-helper_41 + helper_46 - helper_61 + helper_63) + 3.0);
     result_0(0, 1) = helper_87*(helper_104 - helper_105*helper_35 + helper_106*helper_91);
     result_0(0, 2) = helper_87*(helper_106*helper_107 + helper_111);
     result_0(1, 0) = helper_87*(helper_104 + helper_116*helper_99);
-    result_0(1, 1) = helper_56*(-pow(helper_117, 2)*helper_83 + helper_117*helper_65*helper_92 + helper_117*helper_84*helper_91 + 3.0);
+    result_0(1, 1) = helper_56*(-pow((Scalar)helper_117, 2)*helper_83 + helper_117*helper_65*helper_92 + helper_117*helper_84*helper_91 + 3.0);
     result_0(1, 2) = helper_87*(-helper_105*helper_6 - helper_107*helper_116 + helper_118);
     result_0(2, 0) = helper_87*(-helper_105*helper_13 + helper_111 + helper_119*helper_99);
     result_0(2, 1) = helper_87*(helper_118 - helper_119*helper_91);
-    result_0(2, 2) = helper_56*(-helper_108*helper_109*helper_65 - 1.11111111111111*pow(helper_109, 2)*helper_84 + 3.0);
+    result_0(2, 2) = helper_56*(-helper_108*helper_109*helper_65 - 1.11111111111111*pow((Scalar)helper_109, 2)*helper_84 + 3.0);
 }
