@@ -404,11 +404,12 @@ void floatTetWild::collapsing(std::vector<Vector3>& input_vertices, std::vector<
     // tbb::atomic<int> fail_env(0);
 
     const int stopping = input_vertices.size()/10000.;
+    std::mt19937 rng(input_vertices.size());            //Need to construct here so that one_ring_edge_set has different randomness at every call.
 
     std::vector<int> safe_set;
     do {
         build_edges();
-        Mesh::one_ring_edge_set(edges, v_is_removed, f_is_removed, conn_fs, input_vertices, safe_set);
+        Mesh::one_ring_edge_set(edges, v_is_removed, f_is_removed, conn_fs, input_vertices, safe_set, rng);
         cnt = 0;
 
         tbb::parallel_for(size_t(0), safe_set.size(), [&](size_t i) {
