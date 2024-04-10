@@ -1143,6 +1143,7 @@ DDouble pow(DDouble x, int n)
     return res;
 }
 
+#include "external/precision/math_Rational.h"
 
 Scalar floatTetWild::AMIPS_energy(const std::array<Scalar, 12>& T) {
     Scalar res = AMIPS_energy_aux(T);
@@ -1151,27 +1152,6 @@ Scalar floatTetWild::AMIPS_energy(const std::array<Scalar, 12>& T) {
     }
 
     if (res > 1e8) {
-//        //fortest
-//        if (res > 1e10) {
-//            cout << std::setprecision(16) << res << endl;
-//            for (int i = 0; i < T.size(); i++) {
-//                if (i % 3 == 0)
-//                    cout << endl;
-//                cout << T[i] << ", ";
-//            }
-//            cout << endl;
-//            char c;
-//            cin >> c;
-//        }
-//        //fortest
-
-//        //fortest
-//        cnt_large++;
-//        if(!is_energy_unstable(T, res)){
-//            cout<<(cnt_stable++)<<"/"<<cnt_large<<endl;
-//        }
-//        //fortest
-
         if(is_degenerate(Vector3(T[0], T[1], T[2]), Vector3(T[3], T[4], T[5]), Vector3(T[6], T[7], T[8]),
                     Vector3(T[9], T[10], T[11]))) {
             pausee("energy computation degenerate found!!!");
@@ -1218,7 +1198,7 @@ Scalar floatTetWild::AMIPS_energy(const std::array<Scalar, 12>& T) {
         //Above replaced by below by Ben S. Avoiding GMP because it's a nightmare.
         //I don't know for sure ddouble is good enough, it's neither rational nor adaptive.
         //It is a lot more accurate than double though.
-
+/*
         std::array<DDouble, 12> r_T;
         for (int j = 0; j < 12; j++)
             r_T[j] = T[j];
@@ -1252,6 +1232,41 @@ Scalar floatTetWild::AMIPS_energy(const std::array<Scalar, 12>& T) {
                                    twothird * r_T[1 + -1] * r_T[1 + 8] + r_T[1 + -1] * r_T[1 + -1] +
                                    r_T[1 + 8] * r_T[1 + 8] + r_T[1 + 6] * r_T[1 + 6] + r_T[1 + 7] * r_T[1 + 7], 3);
         return std::cbrt(res_r.hi());
+
+*/
+
+
+std::array<math::Rational, 12> r_T;
+for (int j = 0; j < 12; j++)
+    r_T[j] = T[j];
+
+
+auto d = ((-r_T[3] + r_T[6]) * r_T[2] + r_T[3] * r_T[8] +
+                            (r_T[0] - r_T[6]) * r_T[5] - r_T[0] * r_T[8]) * r_T[10] +
+                        ((r_T[3] - r_T[6]) * r_T[1] - r_T[3] * r_T[7] +
+                            (-r_T[0] + r_T[6]) * r_T[4] + r_T[0] * r_T[7]) * r_T[11] +
+                        (-r_T[3] * r_T[8] + (-r_T[9] + r_T[6]) * r_T[5] +
+                            r_T[9] * r_T[8]) * r_T[1] +
+                        (r_T[3] * r_T[7] + (r_T[9] - r_T[6]) * r_T[4] - r_T[9] * r_T[7]) *
+                        r_T[2] + (r_T[4] * r_T[8] - r_T[5] * r_T[7]) * (r_T[0] - r_T[9]);
+
+if(d == 0)
+    return std::numeric_limits<double>::infinity();
+
+auto t = r_T[10]*r_T[10] + r_T[6]*r_T[6] + r_T[3]*r_T[3] + r_T[5]*r_T[5] + r_T[4]*r_T[4] + r_T[2]*r_T[2] + r_T[1]*r_T[1] + r_T[11]*r_T[11] + r_T[0]*r_T[0] + r_T[9]*r_T[9] + r_T[7]*r_T[7] + r_T[8]*r_T[8]
+-math::Rational(2, 3)*(
+        (r_T[1] + r_T[4] + r_T[7])*r_T[10] + 
+        (r_T[2] + r_T[5] + r_T[8])*r_T[11] + 
+        (r_T[4] + r_T[7])*r_T[1] + 
+        (r_T[5] + r_T[8])*r_T[2] + 
+        (r_T[0] + r_T[9] + r_T[6])*r_T[3] + r_T[4]*r_T[7] + r_T[5] * r_T[8] + 
+        (r_T[0] + r_T[9])*r_T[6] + r_T[0]*r_T[9]);
+
+auto res_r = math::Rational(27, 16)*t*t*t/(d*d);
+auto r = std::cbrt(res_r.to_double());
+
+
+
     } else {
         return res;
     }
