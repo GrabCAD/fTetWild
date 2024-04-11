@@ -251,8 +251,11 @@ DDouble ldexp(DDouble a, int m);
 DDouble log(DDouble a);
 DDouble log1p(DDouble a);
 DDouble modf(DDouble a, DDouble *b);
-DDouble pow(DDouble a, DDouble b);
-DDouble pow(DDouble a, int b);
+
+// 20240410JY - These cause ambiguous overload errors in gcc 11.4 on ubuntu 22.04 and aren't used
+// DDouble pow(DDouble a, DDouble b);
+// DDouble pow(DDouble a, int b);
+
 DDouble round(DDouble a);
 DDouble sin(DDouble a);
 DDouble sinh(DDouble a);
