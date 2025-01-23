@@ -100,7 +100,11 @@ void floatTetWild::simplify(std::vector<Vector3>& input_vertices, std::vector<Ve
         Eigen::MatrixXd V(input_vertices.size(), 3);
         Eigen::MatrixXi F(input_faces.size(), 3);
         for (int i = 0; i < input_vertices.size(); i++) {
+#ifndef FLOAT_TETWILD_USE_FLOAT
             V.row(i) = input_vertices[i];
+#else
+            V.row(i) = input_vertices[i].cast<double>();
+#endif
         }
         for (int i = 0; i < input_faces.size(); i++) {
             F.row(i) = input_faces[i];
@@ -954,7 +958,11 @@ void floatTetWild::output_component(const std::vector<Vector3>& input_vertices, 
 
     Eigen::MatrixXd V(input_vertices.size(), 3);
     for(int i=0;i<input_vertices.size();i++)
+#ifndef FLOAT_TETWILD_USE_FLOAT
         V.row(i) = input_vertices[i];
+#else
+        V.row(i) = input_vertices[i].cast<double>();
+#endif
 
     const int C = 2;
     Eigen::MatrixXi F(std::count(input_tags.begin(), input_tags.end(), C), 3);

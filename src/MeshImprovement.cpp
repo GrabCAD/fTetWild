@@ -115,7 +115,7 @@ void floatTetWild::init(Mesh &mesh, AABBWrapper& tree) {
         output_info(mesh, tree);
 
         int v_num, t_num;
-        double max_energy, avg_energy;
+        floatTetWild::Scalar max_energy, avg_energy;
         v_num = mesh.get_v_num();
         t_num = mesh.get_t_num();
         get_max_avg_energy(mesh, max_energy, avg_energy);
@@ -287,7 +287,7 @@ void floatTetWild::cleanup_empty_slots(Mesh &mesh, double percentage) {
 void floatTetWild::operation(Mesh &mesh, AABBWrapper& tree, const std::array<int, 4> &ops){
     igl::Timer igl_timer;
     int v_num, t_num;
-    double max_energy, avg_energy;
+    floatTetWild::Scalar max_energy, avg_energy;
 
     for (int i = 0; i < ops[0]; i++) {
         untangle(mesh);
@@ -956,7 +956,13 @@ void floatTetWild::output_surface(Mesh& mesh, const std::string& filename) {
             }
         }
     }
+
+#ifndef FLOAT_TETWILD_USE_FLOAT
     igl::writeSTL(filename + ".stl", Eigen::MatrixXd(V_sf), Eigen::MatrixXi(F_sf));
+#else
+    igl::writeSTL(filename + ".stl", Eigen::MatrixXd(V_sf.cast<double>()), Eigen::MatrixXi(F_sf));
+#endif
+
 }
 
 //void floatTetWild::apply_sizingfield(const Eigen::VectorXd& V_in, const Eigen::VectorXi& T_in, const Eigen::VectorXd& values,
@@ -1167,11 +1173,22 @@ void floatTetWild::get_tracked_surface(Mesh& mesh, Eigen::Matrix<Scalar, Eigen::
 //    igl::writeSTL("before_bfs.stl", V_sf, F_sf);
 
     if (true || mesh.params.correct_surface_orientation) {
+#ifndef FLOAT_TETWILD_USE_FLOAT
         Eigen::MatrixXd V;
+#else
+        Eigen::MatrixXf V;
+#endif
+
         Eigen::MatrixXi F;
         Eigen::VectorXi _1, _2;
         igl::remove_duplicate_vertices(V_sf, F_sf, -1, V, _1, _2, F);
+
+#ifndef FLOAT_TETWILD_USE_FLOAT
         V_sf = V;
+#else
+        V_sf = V.cast<float>();
+#endif
+
         F_sf.resize(0, 3);
         bfs_orient(F, F_sf, _1);
     }
@@ -2145,7 +2162,11 @@ void floatTetWild::get_surface(Mesh& mesh, Eigen::MatrixXd& V, Eigen::MatrixXi& 
     std::map<int, int> map_v_ids;
     for (int i = 0; i < b_v_ids.size(); i++) {
         map_v_ids[b_v_ids[i]] = i;
+#ifndef FLOAT_TETWILD_USE_FLOAT
         V.row(i) = tet_vertices[b_v_ids[i]].pos;
+#else
+        V.row(i) = tet_vertices[b_v_ids[i]].pos.cast<double>();
+#endif
     }
     for (int i = 0; i < b_faces.size(); i++) {
         F.row(i) << map_v_ids[b_faces[i][0]], map_v_ids[b_faces[i][1]], map_v_ids[b_faces[i][2]];

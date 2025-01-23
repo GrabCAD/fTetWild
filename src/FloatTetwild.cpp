@@ -177,7 +177,13 @@ int tetrahedralization(GEO::Mesh&       sf_mesh,
     logger().info("winding number {}s", timer.getElapsedTimeInSec());
     logger().info("");
 
+#ifndef FLOAT_TETWILD_USE_FLOAT
     MeshIO::extract_volume_mesh(mesh, V, T, false);
+#else
+    floatTetWild::MatrixXs Vf = V.cast<float>();
+    MeshIO::extract_volume_mesh(mesh, Vf, T, false);
+    V = Vf.cast<double>();
+#endif
 
     if (!params.log_path.empty()) {
         std::ofstream fout(params.log_path + "_" + params.postfix + ".csv");

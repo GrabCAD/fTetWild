@@ -1828,7 +1828,11 @@ bool floatTetWild::insert_boundary_edges(const std::vector<Vector3> &input_verti
             Eigen::MatrixXi F(infos.size(), 3);
             for (int i = 0; i < infos.size(); i++) {
                 for (int j = 0; j < 3; j++) {
+#ifndef FLOAT_TETWILD_USE_FLOAT
                     V.row(i * 3 + j) = mesh.tet_vertices[infos[i][j]].pos;
+#else
+                    V.row(i * 3 + j) = mesh.tet_vertices[infos[i][j]].pos.cast<double>();
+#endif
                     C.row(i * 3 + j) << 0, 0, 255;
                 }
                 F.row(i) << i * 3, i * 3 + 1, i * 3 + 2;
@@ -1839,7 +1843,11 @@ bool floatTetWild::insert_boundary_edges(const std::vector<Vector3> &input_verti
             Eigen::MatrixXd V(3, 3), C(3, 3);
             Eigen::MatrixXi F(1, 3);
             for (int j = 0; j < 3; j++) {
+#ifndef FLOAT_TETWILD_USE_FLOAT
                 V.row(j) = input_vertices[input_faces[f_id][j]];
+#else
+                V.row(j) = input_vertices[input_faces[f_id][j]].cast<double>();
+#endif
                 C.row(j) << 255, 0, 0;
             }
             F.row(0) << 0, 1, 2;
@@ -2260,7 +2268,7 @@ bool floatTetWild::insert_boundary_edges_get_intersecting_edges_and_points(
                         break;
                     }
                     //if intersect
-                    double t2 = -1;
+                    floatTetWild::Scalar t2 = -1;
                     if (seg_seg_intersection_2d(evs_2d, {{fvs_2d[k], fvs_2d[(k + 1) % 3]}}, t2)) {
                         Vector3 p = (1 - t2) * mesh.tet_vertices[f_v_ids[k]].pos
                                     + t2 * mesh.tet_vertices[f_v_ids[(k + 1) % 3]].pos;
@@ -3094,7 +3102,11 @@ void floatTetWild::check_track_surface_fs(Mesh &mesh, std::vector<std::array<std
                 int t_id = infos[i].first;
                 int k = infos[i].second;
                 for (int j = 0; j < 3; j++) {
+#ifndef FLOAT_TETWILD_USE_FLOAT
                     V.row(i * 3 + j) = mesh.tet_vertices[mesh.tets[t_id][(k + j + 1) % 4]].pos;
+#else
+                    V.row(i * 3 + j) = mesh.tet_vertices[mesh.tets[t_id][(k + j + 1) % 4]].pos.cast<double>();
+#endif
                     C.row(i * 3 + j) << 0, 0, 255;
                 }
                 F.row(i) << i * 3, i * 3 + 1, i * 3 + 2;
@@ -3106,7 +3118,11 @@ void floatTetWild::check_track_surface_fs(Mesh &mesh, std::vector<std::array<std
             Eigen::MatrixXd V(3, 3), C(3, 3);
             Eigen::MatrixXi F(1, 3);
             for (int j = 0; j < 3; j++) {
+#ifndef FLOAT_TETWILD_USE_FLOAT
                 V.row(j) = f_vs[j];
+#else
+                V.row(j) = f_vs[j].cast<double>();
+#endif
                 C.row(j) << 255, 0, 0;
             }
             F.row(0) << 0, 1, 2;

@@ -206,7 +206,18 @@ int sub_sub_cross_sub_dot(real a[3], real b[3], real c[3], real d[3]);
 #include <geogram/delaunay/delaunay_3d.h>
 inline int sub_sub_cross_sub_dot(real pa[3], real pb[3], real pc[3], real pd[3]) {
 //    const real result = orient3d(pa, pb, pc, pd);
+
+#ifndef FLOAT_TETWILD_USE_FLOAT
     auto result = -GEO::PCK::orient_3d(pa, pb, pc, pd);
+#else
+    double va[] = {pa[0], pa[1], pa[2]};
+    double vb[] = {pb[0], pb[1], pb[2]};
+    double vc[] = {pc[0], pc[1], pc[2]};
+    double vd[] = {pd[0], pd[1], pd[2]};
+
+    auto result = -GEO::PCK::orient_3d(va, vb, vc, vd);
+#endif
+
     if (result > 0)
         return 1;
     else if (result < 0)
