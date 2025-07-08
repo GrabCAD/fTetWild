@@ -3,8 +3,9 @@ cmake_minimum_required(VERSION 3.8)
 project(FloatTetwild)
 ################################################################################
 
-#Make everything /MT
+
 if(MSVC)
+	#Make everything /MT
 	foreach(config ${CMAKE_CONFIGURATION_TYPES})
 		string(TOUPPER ${config} config)
 		string(REPLACE /MD /MT CMAKE_C_FLAGS_${config} "${CMAKE_C_FLAGS_${config}}")
@@ -12,6 +13,9 @@ if(MSVC)
 	endforeach()
 
 	set(IGL_STATIC_RUNTIME ON)
+else()
+	#Disable a specific warning.
+	add_compile_options("-Wno-changes-meaning")
 endif()
 
 
